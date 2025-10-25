@@ -1,640 +1,790 @@
 ---
 // 优化配置测试页面
-export const prerender = false;
 ---
 
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>优化配置测试</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        .test-section {
-            margin: 20px 0;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background: #fafafa;
-        }
-        .test-button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 10px 5px;
-        }
-        .test-button:hover {
-            background: #0056b3;
-        }
-        .result {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-        }
-        .success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        .error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-        .info {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #007bff;
-        }
-        .stat-label {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
-        }
-        .category-list {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            background: white;
-        }
-        .category-item {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .category-item:last-child {
-            border-bottom: none;
-        }
-        .loading {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 优化配置测试</h1>
-            <p>测试CSV构建生成的优化配置是否正确工作</p>
-        </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>优化配置测试</title>
+        <style>
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    sans-serif;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                background: #f5f5f5;
+            }
+            .container {
+                background: white;
+                border-radius: 8px;
+                padding: 30px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #e0e0e0;
+            }
+            .test-section {
+                margin: 20px 0;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                background: #fafafa;
+            }
+            .test-button {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 16px;
+                margin: 10px 5px;
+            }
+            .test-button:hover {
+                background: #0056b3;
+            }
+            .result {
+                margin-top: 15px;
+                padding: 15px;
+                border-radius: 4px;
+                font-family: "Courier New", monospace;
+                white-space: pre-wrap;
+            }
+            .success {
+                background: #d4edda;
+                border: 1px solid #c3e6cb;
+                color: #155724;
+            }
+            .error {
+                background: #f8d7da;
+                border: 1px solid #f5c6cb;
+                color: #721c24;
+            }
+            .info {
+                background: #d1ecf1;
+                border: 1px solid #bee5eb;
+                color: #0c5460;
+            }
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin-top: 20px;
+            }
+            .stat-card {
+                background: white;
+                padding: 15px;
+                border-radius: 6px;
+                border: 1px solid #ddd;
+                text-align: center;
+            }
+            .stat-value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #007bff;
+            }
+            .stat-label {
+                font-size: 14px;
+                color: #666;
+                margin-top: 5px;
+            }
+            .category-list {
+                max-height: 300px;
+                overflow-y: auto;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 10px;
+                background: white;
+            }
+            .category-item {
+                padding: 8px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .category-item:last-child {
+                border-bottom: none;
+            }
+            .loading {
+                text-align: center;
+                color: #666;
+                font-style: italic;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🚀 优化配置测试</h1>
+                <p>测试CSV构建生成的优化配置是否正确工作</p>
+            </div>
 
-        <!-- 配置文件选择 -->
-        <div class="test-section">
-            <h2>⚙️ 配置选择</h2>
-            <p>选择要测试的配置文件</p>
-            <div style="margin: 15px 0;">
-                <label for="configPath" style="display: block; margin-bottom: 8px; font-weight: bold;">配置文件:</label>
-                <select id="configPath" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 400px;">
-                    <option value="/config.json">优化格式 - CSV构建生成 (config.json)</option>
-                    <option value="/config-optimized.json">优化格式 - 副本 (config-optimized.json)</option>
-                    <option value="/config-traditional.json">传统格式 - 原始数据 (config-traditional.json)</option>
-                </select>
-                <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                    💡 提示: 选择不同的配置文件来测试不同格式的检测效果
+            <!-- 配置文件选择 -->
+            <div class="test-section">
+                <h2>⚙️ 配置选择</h2>
+                <p>选择要测试的配置文件</p>
+                <div style="margin: 15px 0;">
+                    <label
+                        for="configPath"
+                        style="display: block; margin-bottom: 8px; font-weight: bold;"
+                        >配置文件:</label
+                    >
+                    <select
+                        id="configPath"
+                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 400px;"
+                    >
+                        <option value="/config.json"
+                            >优化格式 - CSV构建生成 (config.json)</option
+                        >
+                        <option value="/config-optimized.json"
+                            >优化格式 - 副本 (config-optimized.json)</option
+                        >
+                        <option value="/config-traditional.json"
+                            >传统格式 - 原始数据 (config-traditional.json)</option
+                        >
+                    </select>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                        💡 提示: 选择不同的配置文件来测试不同格式的检测效果
+                    </div>
+                </div>
+            </div>
+
+            <!-- 基础配置测试 -->
+            <div class="test-section">
+                <h2>📄 基础配置测试</h2>
+                <p>测试主配置文件的加载和格式检测</p>
+                <button class="test-button" onclick="testBaseConfig()"
+                    >🔍 测试基础配置</button
+                >
+                <div
+                    id="baseConfigResult"
+                    class="result"
+                    style="display: none;"
+                >
+                </div>
+            </div>
+
+            <!-- ConfigManager测试 -->
+            <div class="test-section">
+                <h2>🔧 ConfigManager测试</h2>
+                <p>测试ConfigManager的格式检测和加载功能</p>
+                <button class="test-button" onclick="testConfigManager()"
+                    >⚡ 测试ConfigManager</button
+                >
+                <div
+                    id="configManagerResult"
+                    class="result"
+                    style="display: none;"
+                >
+                </div>
+            </div>
+
+            <!-- 分类文件测试 -->
+            <div class="test-section">
+                <h2>📁 分类文件测试</h2>
+                <p>测试分类文件的加载和数据完整性</p>
+                <button class="test-button" onclick="testCategoryFiles()"
+                    >📂 测试分类文件</button
+                >
+                <div id="categoryResult" class="result" style="display: none;">
+                </div>
+                <div
+                    id="categoryStats"
+                    class="stats-grid"
+                    style="display: none;"
+                >
+                </div>
+                <div
+                    id="categoryList"
+                    class="category-list"
+                    style="display: none;"
+                >
+                </div>
+            </div>
+
+            <!-- 懒加载测试 -->
+            <div class="test-section">
+                <h2>⚡ 懒加载测试</h2>
+                <p>测试按需加载分类数据的功能，显示具体调用的文件</p>
+                <button class="test-button" onclick="testLazyLoading()"
+                    >🔄 测试懒加载</button
+                >
+                <button class="test-button" onclick="testSpecificCategory()"
+                    >📁 测试特定分类</button
+                >
+                <button
+                    class="test-button"
+                    onclick="testSimple()"
+                    style="background: #28a745;">🧪 简单测试</button
+                >
+                <div style="margin: 10px 0;">
+                    <label for="categoryId">选择分类ID:</label>
+                    <select
+                        id="categoryId"
+                        style="padding: 4px 8px; margin-left: 8px;"
+                    >
+                        <option value="0">分类 0</option>
+                        <option value="1">分类 1</option>
+                        <option value="2">分类 2</option>
+                        <option value="3">分类 3</option>
+                        <option value="4">分类 4</option>
+                        <option value="5">分类 5</option>
+                    </select>
+                </div>
+                <div id="lazyLoadResult" class="result" style="display: none;">
+                </div>
+                <div
+                    id="networkLog"
+                    style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"
+                >
+                    <h4>🌐 网络请求日志</h4>
+                    <div
+                        id="networkLogContent"
+                        style="font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"
+                    >
+                    </div>
+                </div>
+            </div>
+
+            <!-- 性能测试 -->
+            <div class="test-section">
+                <h2>📊 性能测试</h2>
+                <p>测试配置加载性能和文件大小</p>
+                <button class="test-button" onclick="testPerformance()"
+                    >⏱️ 测试性能</button
+                >
+                <div
+                    id="performanceResult"
+                    class="result"
+                    style="display: none;"
+                >
                 </div>
             </div>
         </div>
 
-        <!-- 基础配置测试 -->
-        <div class="test-section">
-            <h2>📄 基础配置测试</h2>
-            <p>测试主配置文件的加载和格式检测</p>
-            <button class="test-button" onclick="testBaseConfig()">🔍 测试基础配置</button>
-            <div id="baseConfigResult" class="result" style="display: none;"></div>
-        </div>
+        <script>
+            // @ts-nocheck
+            // 网络请求日志
+            let networkRequests = [];
 
-        <!-- ConfigManager测试 -->
-        <div class="test-section">
-            <h2>🔧 ConfigManager测试</h2>
-            <p>测试ConfigManager的格式检测和加载功能</p>
-            <button class="test-button" onclick="testConfigManager()">⚡ 测试ConfigManager</button>
-            <div id="configManagerResult" class="result" style="display: none;"></div>
-        </div>
-
-        <!-- 分类文件测试 -->
-        <div class="test-section">
-            <h2>📁 分类文件测试</h2>
-            <p>测试分类文件的加载和数据完整性</p>
-            <button class="test-button" onclick="testCategoryFiles()">📂 测试分类文件</button>
-            <div id="categoryResult" class="result" style="display: none;"></div>
-            <div id="categoryStats" class="stats-grid" style="display: none;"></div>
-            <div id="categoryList" class="category-list" style="display: none;"></div>
-        </div>
-
-        <!-- 懒加载测试 -->
-        <div class="test-section">
-            <h2>⚡ 懒加载测试</h2>
-            <p>测试按需加载分类数据的功能，显示具体调用的文件</p>
-            <button class="test-button" onclick="testLazyLoading()">🔄 测试懒加载</button>
-            <button class="test-button" onclick="testSpecificCategory()">📁 测试特定分类</button>
-            <button class="test-button" onclick="testSimple()" style="background: #28a745;">🧪 简单测试</button>
-            <div style="margin: 10px 0;">
-                <label for="categoryId">选择分类ID:</label>
-                <select id="categoryId" style="padding: 4px 8px; margin-left: 8px;">
-                    <option value="0">分类 0</option>
-                    <option value="1">分类 1</option>
-                    <option value="2">分类 2</option>
-                    <option value="3">分类 3</option>
-                    <option value="4">分类 4</option>
-                    <option value="5">分类 5</option>
-                </select>
-            </div>
-            <div id="lazyLoadResult" class="result" style="display: none;"></div>
-            <div id="networkLog" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;">
-                <h4>🌐 网络请求日志</h4>
-                <div id="networkLogContent" style="font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
-            </div>
-        </div>
-
-        <!-- 性能测试 -->
-        <div class="test-section">
-            <h2>📊 性能测试</h2>
-            <p>测试配置加载性能和文件大小</p>
-            <button class="test-button" onclick="testPerformance()">⏱️ 测试性能</button>
-            <div id="performanceResult" class="result" style="display: none;"></div>
-        </div>
-    </div>
-
-    <script>
-        // @ts-nocheck
-        // 网络请求日志
-        let networkRequests = [];
-
-        // 监控fetch请求
-        const originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            const url = args[0];
-            const startTime = performance.now();
-
-            networkRequests.push({
-                url: url,
-                startTime: startTime,
-                status: 'pending'
-            });
-
-            return originalFetch.apply(this, args).then(response => {
-                const endTime = performance.now();
-                const requestIndex = networkRequests.findIndex(req =>
-                    req.url === url && req.status === 'pending'
-                );
-
-                if (requestIndex !== -1) {
-                    networkRequests[requestIndex] = {
-                        ...networkRequests[requestIndex],
-                        status: response.ok ? 'success' : 'error',
-                        statusCode: response.status,
-                        loadTime: endTime - startTime,
-                        size: response.headers.get('content-length') || 'unknown'
-                    };
-                }
-
-                updateNetworkLog();
-                return response;
-            }).catch(error => {
-                const endTime = performance.now();
-                const requestIndex = networkRequests.findIndex(req =>
-                    req.url === url && req.status === 'pending'
-                );
-
-                if (requestIndex !== -1) {
-                    networkRequests[requestIndex] = {
-                        ...networkRequests[requestIndex],
-                        status: 'error',
-                        error: error.message,
-                        loadTime: endTime - startTime
-                    };
-                }
-
-                updateNetworkLog();
-                throw error;
-            });
-        };
-
-        // 更新网络日志显示
-        function updateNetworkLog() {
-            const logDiv = document.getElementById('networkLogContent');
-            if (!logDiv) return;
-
-            const logContent = networkRequests.map(req => {
-                const status = req.status === 'success' ? '✅' :
-                             req.status === 'error' ? '❌' : '⏳';
-                const time = req.loadTime ? req.loadTime.toFixed(2) + 'ms' : 'pending';
-                const size = req.size !== 'unknown' ? Math.round(req.size/1024) + 'KB' : '';
-
-                return status + ' ' + req.url + ' - ' + time + ' ' + size;
-            }).join('\n');
-
-            logDiv.textContent = logContent;
-        }
-
-        // 清空网络日志
-        function clearNetworkLog() {
-            networkRequests = [];
-            updateNetworkLog();
-        }
-
-        // 获取选择的配置路径
-        function getSelectedConfigPath() {
-            const select = document.getElementById('configPath');
-            return select ? select.value : '/config.json';
-        }
-
-        // 简单测试函数
-        function testSimple() {
-            try {
-                console.log('🧪 开始简单测试...');
-                const resultDiv = document.getElementById('lazyLoadResult');
-                if (resultDiv) {
-                    resultDiv.style.display = 'block';
-                    resultDiv.className = 'result success';
-                    resultDiv.textContent = '🎉 简单测试成功！JavaScript正常工作。\n\n测试结果:\n- ✅ 函数调用成功\n- ✅ DOM元素访问正常\n- ✅ 样式设置正常';
-                    console.log('✅ 简单测试成功');
-                } else {
-                    console.error('❌ 找不到结果显示区域');
-                    alert('❌ 找不到结果显示区域');
-                }
-            } catch (error) {
-                console.error('❌ 简单测试失败:', error);
-                alert('❌ 简单测试失败: ' + error.message);
-            }
-        }
-
-        // 测试特定分类
-        async function testSpecificCategory() {
-            const resultDiv = document.getElementById('lazyLoadResult');
-            const networkLogDiv = document.getElementById('networkLog');
-            const categorySelect = document.getElementById('categoryId');
-
-            if (!resultDiv || !categorySelect) return;
-
-            const categoryId = categorySelect.value;
-
-            resultDiv.style.display = 'block';
-            networkLogDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = `🔄 正在测试分类 ${categoryId}...`;
-
-            // 清空网络日志
-            clearNetworkLog();
-
-            try {
+            // 监控fetch请求
+            const originalFetch = window.fetch;
+            window.fetch = function (...args) {
+                const url = args[0];
                 const startTime = performance.now();
 
-                // 1. 先加载基础配置
-                const configPath = getSelectedConfigPath();
-                console.log(`📄 加载基础配置: ${configPath}`);
-                const configResponse = await fetch(configPath);
-                const config = await configResponse.json();
-                const configLoadTime = performance.now() - startTime;
-
-                // 2. 加载特定分类
-                const categoryStartTime = performance.now();
-                const categoryUrl = `/categories/${categoryId}.json`;
-                console.log(`📁 加载分类文件: ${categoryUrl}`);
-                const categoryResponse = await fetch(categoryUrl);
-
-                if (!categoryResponse.ok) {
-                    throw new Error(`分类文件加载失败: ${categoryResponse.status} ${categoryResponse.statusText}`);
-                }
-
-                const categoryData = await categoryResponse.json();
-                const categoryLoadTime = performance.now() - categoryStartTime;
-                const totalTime = performance.now() - startTime;
-
-                // 3. 显示结果
-                let result = `📁 分类 ${categoryId} 测试完成!\n\n`;
-                result += `📊 加载结果:\n`;
-                result += `  - 基础配置: ${configPath}\n`;
-                result += `  - 分类文件: ${categoryUrl}\n`;
-                result += `  - 分类名称: ${categoryData.categoryName || '未知'}\n`;
-                result += `  - 网站数量: ${categoryData.sites?.length || 0}\n\n`;
-
-                result += `⏱️ 性能数据:\n`;
-                result += `  - 基础配置加载: ${configLoadTime.toFixed(2)}ms\n`;
-                result += `  - 分类数据加载: ${categoryLoadTime.toFixed(2)}ms\n`;
-                result += `  - 总加载时间: ${totalTime.toFixed(2)}ms\n\n`;
-
-                result += `🔍 网络请求:\n`;
-                result += `  - 请求数量: ${networkRequests.length}\n`;
-                result += `  - 成功请求: ${networkRequests.filter(r => r.status === 'success').length}\n`;
-                result += `  - 失败请求: ${networkRequests.filter(r => r.status === 'error').length}\n\n`;
-
-                if (categoryData.sites && categoryData.sites.length > 0) {
-                    result += `📋 网站示例:\n`;
-                    categoryData.sites.slice(0, 3).forEach((site, index) => {
-                        result += `  ${index + 1}. ${site.title || '未知'} - ${site.url || '无链接'}\n`;
-                    });
-                    if (categoryData.sites.length > 3) {
-                        result += `  ... 还有 ${categoryData.sites.length - 3} 个网站\n`;
-                    }
-                }
-
-                resultDiv.className = 'result success';
-                resultDiv.textContent = result;
-
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ 分类 ${categoryId} 测试失败:\n${error.message}\n\n网络请求: ${networkRequests.length} 个`;
-            }
-        }
-
-        // 测试基础配置
-        async function testBaseConfig() {
-            const resultDiv = document.getElementById('baseConfigResult');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在加载基础配置...';
-
-            try {
-                const configPath = getSelectedConfigPath();
-                const response = await fetch(configPath);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const config = await response.json();
-                
-                // 检查优化格式特征
-                const isOptimized = config.optimization && config.optimization.enabled;
-                const hasMenuItems = config.menuItems && Array.isArray(config.menuItems);
-                const hasCategoryIndex = config.menuItems.some(item => 
-                    typeof item.categoryIndex === 'number' || 
-                    (item.submenu && item.submenu.some(sub => typeof sub.categoryIndex === 'number'))
-                );
-
-                let result = '✅ 基础配置加载成功！\n\n';
-                result += `📊 配置信息:\n`;
-                result += `  - 配置文件: ${configPath}\n`;
-                result += `  - 网站标题: ${config.site?.title || '未设置'}\n`;
-                result += `  - 网站描述: ${config.site?.description || '未设置'}\n`;
-                result += `  - 菜单项数: ${config.menuItems?.length || 0}\n\n`;
-                
-                result += `🔍 格式检测:\n`;
-                result += `  - 优化格式: ${isOptimized ? '✅ 是' : '❌ 否'}\n`;
-                result += `  - 菜单结构: ${hasMenuItems ? '✅ 正确' : '❌ 错误'}\n`;
-                result += `  - 分类索引: ${hasCategoryIndex ? '✅ 存在' : '❌ 缺失'}\n\n`;
-
-                if (config.optimization) {
-                    result += `📈 优化统计:\n`;
-                    result += `  - 版本: ${config.optimization.version}\n`;
-                    result += `  - 总分类数: ${config.optimization.totalCategories}\n`;
-                    result += `  - 总网站数: ${config.optimization.totalSites}\n`;
-                    result += `  - 压缩比例: ${config.optimization.compressionRatio}%\n`;
-                    result += `  - 生成时间: ${new Date(config.optimization.generatedAt).toLocaleString()}\n`;
-                }
-
-                resultDiv.className = 'result success';
-                resultDiv.textContent = result;
-
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ 基础配置测试失败:\n${error.message}`;
-            }
-        }
-
-        // 测试ConfigManager
-        async function testConfigManager() {
-            const resultDiv = document.getElementById('configManagerResult');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在测试ConfigManager...';
-
-            try {
-                // 使用真正的ConfigManager检测逻辑
-                const startTime = performance.now();
-
-                const configPath = getSelectedConfigPath();
-                const response = await fetch(configPath);
-                const config = await response.json();
-
-                const loadTime = performance.now() - startTime;
-
-                // 真正的ConfigManager检测逻辑
-                let confidence = 0;
-                let isOptimized = false;
-                let hasOptimizationField = false;
-                let hasCategoryIndexes = false;
-                let hasPreviewSites = false;
-                let estimatedCategories = 0;
-                let details = [];
-
-                // 1. 检查optimization字段 (权重: 40%)
-                if (config.optimization && typeof config.optimization === 'object') {
-                    hasOptimizationField = true;
-                    details.push('✅ 检测到optimization字段');
-                    if (config.optimization.enabled === true) {
-                        confidence += 0.4;
-                        isOptimized = true;
-                        details.push('✅ optimization.enabled = true');
-                    }
-                } else {
-                    details.push('❌ 未检测到optimization字段');
-                }
-
-                // 2. 检查categoryIndex字段 (权重: 40%)
-                if (config.menuItems && Array.isArray(config.menuItems)) {
-                    details.push('✅ 菜单结构正确');
-
-                    const itemsWithCategoryIndex = config.menuItems.filter(item =>
-                        typeof item.categoryIndex === 'number' && item.categoryIndex >= 0
-                    );
-
-                    if (itemsWithCategoryIndex.length > 0) {
-                        hasCategoryIndexes = true;
-                        confidence += 0.4;
-                        isOptimized = true;
-                        details.push(`✅ 检测到${itemsWithCategoryIndex.length}个categoryIndex字段`);
-
-                        // 计算分类数量 (包括submenu)
-                        const allIndexes = [];
-                        config.menuItems.forEach(item => {
-                            if (typeof item.categoryIndex === 'number' && item.categoryIndex >= 0) {
-                                allIndexes.push(item.categoryIndex);
-                            }
-                            if (item.submenu && Array.isArray(item.submenu)) {
-                                item.submenu.forEach(sub => {
-                                    if (typeof sub.categoryIndex === 'number' && sub.categoryIndex >= 0) {
-                                        allIndexes.push(sub.categoryIndex);
-                                    }
-                                });
-                            }
-                        });
-                        estimatedCategories = allIndexes.length > 0 ? Math.max(...allIndexes) + 1 : 0;
-                        details.push(`📊 估算分类数: ${estimatedCategories}`);
-                    } else {
-                        details.push('❌ 未检测到categoryIndex字段');
-                    }
-                } else {
-                    details.push('❌ 菜单结构错误');
-                }
-
-                // 3. 检查previewSites字段 (权重: 20%)
-                if (config.menuItems && config.menuItems.some(item =>
-                    Array.isArray(item.previewSites) ||
-                    (item.submenu && item.submenu.some(sub => Array.isArray(sub.previewSites)))
-                )) {
-                    hasPreviewSites = true;
-                    confidence += 0.2;
-                    isOptimized = true;
-                    details.push('✅ 检测到previewSites字段');
-                } else {
-                    details.push('❌ 未检测到previewSites字段');
-                }
-
-                // 4. 检查传统格式特征
-                if (!isOptimized && config.menuItems && config.menuItems.some(item =>
-                    Array.isArray(item.sites) ||
-                    (item.submenu && item.submenu.some(sub => Array.isArray(sub.sites)))
-                )) {
-                    confidence = 0.95; // 传统配置的高置信度
-                    details.push('✅ 检测到传统格式sites字段');
-                }
-
-                // 5. 检查categoryMap字段 (传统格式特征)
-                if (config.categoryMap && typeof config.categoryMap === 'object') {
-                    if (!isOptimized) {
-                        confidence += 0.05; // 增强传统格式置信度
-                        details.push('✅ 检测到categoryMap字段 (传统格式)');
-                    }
-                }
-
-                const confidencePercent = Math.round(confidence * 100);
-                const formatType = isOptimized ? 'optimized' : 'traditional';
-
-                let result = '🔧 ConfigManager测试结果 (真实检测逻辑):\n\n';
-                result += `📊 检测结果:\n`;
-                result += `  - 配置文件: ${configPath}\n`;
-                result += `  - 格式类型: ${formatType === 'optimized' ? '优化格式' : '传统格式'}\n`;
-                result += `  - 置信度: ${confidencePercent}%\n`;
-                result += `  - 加载时间: ${loadTime.toFixed(2)}ms\n`;
-                result += `  - 是否优化: ${isOptimized ? '是' : '否'}\n\n`;
-
-                result += `🔍 检测详情:\n`;
-                details.forEach(detail => {
-                    result += `  ${detail}\n`;
+                networkRequests.push({
+                    url: url,
+                    startTime: startTime,
+                    status: "pending",
                 });
 
-                if (isOptimized && config.optimization) {
-                    result += `\n📈 优化信息:\n`;
-                    result += `  - 版本: ${config.optimization.version || 'N/A'}\n`;
-                    result += `  - 总分类数: ${config.optimization.totalCategories || 'N/A'}\n`;
-                    result += `  - 总网站数: ${config.optimization.totalSites || 'N/A'}\n`;
-                    result += `  - 压缩比例: ${config.optimization.compressionRatio || 'N/A'}%\n`;
-                }
+                return originalFetch
+                    .apply(this, args)
+                    .then((response) => {
+                        const endTime = performance.now();
+                        const requestIndex = networkRequests.findIndex(
+                            (req) =>
+                                req.url === url && req.status === "pending",
+                        );
 
-                resultDiv.className = confidencePercent >= 90 ? 'result success' : 'result error';
-                resultDiv.textContent = result;
+                        if (requestIndex !== -1) {
+                            networkRequests[requestIndex] = {
+                                ...networkRequests[requestIndex],
+                                status: response.ok ? "success" : "error",
+                                statusCode: response.status,
+                                loadTime: endTime - startTime,
+                                size:
+                                    response.headers.get("content-length") ||
+                                    "unknown",
+                            };
+                        }
 
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ ConfigManager测试失败:\n${error.message}`;
+                        updateNetworkLog();
+                        return response;
+                    })
+                    .catch((error) => {
+                        const endTime = performance.now();
+                        const requestIndex = networkRequests.findIndex(
+                            (req) =>
+                                req.url === url && req.status === "pending",
+                        );
+
+                        if (requestIndex !== -1) {
+                            networkRequests[requestIndex] = {
+                                ...networkRequests[requestIndex],
+                                status: "error",
+                                error: error.message,
+                                loadTime: endTime - startTime,
+                            };
+                        }
+
+                        updateNetworkLog();
+                        throw error;
+                    });
+            };
+
+            // 更新网络日志显示
+            function updateNetworkLog() {
+                const logDiv = document.getElementById("networkLogContent");
+                if (!logDiv) return;
+
+                const logContent = networkRequests
+                    .map((req) => {
+                        const status =
+                            req.status === "success"
+                                ? "✅"
+                                : req.status === "error"
+                                  ? "❌"
+                                  : "⏳";
+                        const time = req.loadTime
+                            ? req.loadTime.toFixed(2) + "ms"
+                            : "pending";
+                        const size =
+                            req.size !== "unknown"
+                                ? Math.round(req.size / 1024) + "KB"
+                                : "";
+
+                        return (
+                            status + " " + req.url + " - " + time + " " + size
+                        );
+                    })
+                    .join("\n");
+
+                logDiv.textContent = logContent;
             }
-        }
 
-        // 测试分类文件
-        async function testCategoryFiles() {
-            const resultDiv = document.getElementById('categoryResult');
-            const statsDiv = document.getElementById('categoryStats');
-            const listDiv = document.getElementById('categoryList');
-            
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在测试分类文件...';
+            // 清空网络日志
+            function clearNetworkLog() {
+                networkRequests = [];
+                updateNetworkLog();
+            }
 
-            try {
-                // 先获取基础配置
-                const configPath = getSelectedConfigPath();
-                const configResponse = await fetch(configPath);
-                const config = await configResponse.json();
-                
-                const totalCategories = config.optimization?.totalCategories || 0;
-                let successCount = 0;
-                let totalSites = 0;
-                let categoryDetails = [];
+            // 获取选择的配置路径
+            function getSelectedConfigPath() {
+                const select = document.getElementById("configPath");
+                return select ? select.value : "/config.json";
+            }
 
-                // 测试每个分类文件
-                for (let i = 0; i < totalCategories; i++) {
-                    try {
-                        const categoryResponse = await fetch(`/categories/${i}.json`);
-                        if (categoryResponse.ok) {
-                            const categoryData = await categoryResponse.json();
-                            successCount++;
-                            totalSites += categoryData.sites?.length || 0;
-                            
-                            categoryDetails.push({
-                                id: i,
-                                name: categoryData.categoryName,
-                                siteCount: categoryData.sites?.length || 0,
-                                status: '✅'
+            // 简单测试函数
+            function testSimple() {
+                try {
+                    console.log("🧪 开始简单测试...");
+                    const resultDiv = document.getElementById("lazyLoadResult");
+                    if (resultDiv) {
+                        resultDiv.style.display = "block";
+                        resultDiv.className = "result success";
+                        resultDiv.textContent =
+                            "🎉 简单测试成功！JavaScript正常工作。\n\n测试结果:\n- ✅ 函数调用成功\n- ✅ DOM元素访问正常\n- ✅ 样式设置正常";
+                        console.log("✅ 简单测试成功");
+                    } else {
+                        console.error("❌ 找不到结果显示区域");
+                        alert("❌ 找不到结果显示区域");
+                    }
+                } catch (error) {
+                    console.error("❌ 简单测试失败:", error);
+                    alert("❌ 简单测试失败: " + error.message);
+                }
+            }
+
+            // 测试特定分类
+            async function testSpecificCategory() {
+                const resultDiv = document.getElementById("lazyLoadResult");
+                const networkLogDiv = document.getElementById("networkLog");
+                const categorySelect = document.getElementById("categoryId");
+
+                if (!resultDiv || !categorySelect) return;
+
+                const categoryId = categorySelect.value;
+
+                resultDiv.style.display = "block";
+                networkLogDiv.style.display = "block";
+                resultDiv.className = "result info";
+                resultDiv.textContent = `🔄 正在测试分类 ${categoryId}...`;
+
+                // 清空网络日志
+                clearNetworkLog();
+
+                try {
+                    const startTime = performance.now();
+
+                    // 1. 先加载基础配置
+                    const configPath = getSelectedConfigPath();
+                    console.log(`📄 加载基础配置: ${configPath}`);
+                    const configResponse = await fetch(configPath);
+                    const config = await configResponse.json();
+                    const configLoadTime = performance.now() - startTime;
+
+                    // 2. 加载特定分类
+                    const categoryStartTime = performance.now();
+                    const categoryUrl = `/categories/${categoryId}.json`;
+                    console.log(`📁 加载分类文件: ${categoryUrl}`);
+                    const categoryResponse = await fetch(categoryUrl);
+
+                    if (!categoryResponse.ok) {
+                        throw new Error(
+                            `分类文件加载失败: ${categoryResponse.status} ${categoryResponse.statusText}`,
+                        );
+                    }
+
+                    const categoryData = await categoryResponse.json();
+                    const categoryLoadTime =
+                        performance.now() - categoryStartTime;
+                    const totalTime = performance.now() - startTime;
+
+                    // 3. 显示结果
+                    let result = `📁 分类 ${categoryId} 测试完成!\n\n`;
+                    result += `📊 加载结果:\n`;
+                    result += `  - 基础配置: ${configPath}\n`;
+                    result += `  - 分类文件: ${categoryUrl}\n`;
+                    result += `  - 分类名称: ${categoryData.categoryName || "未知"}\n`;
+                    result += `  - 网站数量: ${categoryData.sites?.length || 0}\n\n`;
+
+                    result += `⏱️ 性能数据:\n`;
+                    result += `  - 基础配置加载: ${configLoadTime.toFixed(2)}ms\n`;
+                    result += `  - 分类数据加载: ${categoryLoadTime.toFixed(2)}ms\n`;
+                    result += `  - 总加载时间: ${totalTime.toFixed(2)}ms\n\n`;
+
+                    result += `🔍 网络请求:\n`;
+                    result += `  - 请求数量: ${networkRequests.length}\n`;
+                    result += `  - 成功请求: ${networkRequests.filter((r) => r.status === "success").length}\n`;
+                    result += `  - 失败请求: ${networkRequests.filter((r) => r.status === "error").length}\n\n`;
+
+                    if (categoryData.sites && categoryData.sites.length > 0) {
+                        result += `📋 网站示例:\n`;
+                        categoryData.sites
+                            .slice(0, 3)
+                            .forEach((site, index) => {
+                                result += `  ${index + 1}. ${site.title || "未知"} - ${site.url || "无链接"}\n`;
                             });
+                        if (categoryData.sites.length > 3) {
+                            result += `  ... 还有 ${categoryData.sites.length - 3} 个网站\n`;
+                        }
+                    }
+
+                    resultDiv.className = "result success";
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ 分类 ${categoryId} 测试失败:\n${error.message}\n\n网络请求: ${networkRequests.length} 个`;
+                }
+            }
+
+            // 测试基础配置
+            async function testBaseConfig() {
+                const resultDiv = document.getElementById("baseConfigResult");
+                resultDiv.style.display = "block";
+                resultDiv.className = "result info";
+                resultDiv.textContent = "🔄 正在加载基础配置...";
+
+                try {
+                    const configPath = getSelectedConfigPath();
+                    const response = await fetch(configPath);
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP ${response.status}: ${response.statusText}`,
+                        );
+                    }
+
+                    const config = await response.json();
+
+                    // 检查优化格式特征
+                    const isOptimized =
+                        config.optimization && config.optimization.enabled;
+                    const hasMenuItems =
+                        config.menuItems && Array.isArray(config.menuItems);
+                    const hasCategoryIndex = config.menuItems.some(
+                        (item) =>
+                            typeof item.categoryIndex === "number" ||
+                            (item.submenu &&
+                                item.submenu.some(
+                                    (sub) =>
+                                        typeof sub.categoryIndex === "number",
+                                )),
+                    );
+
+                    let result = "✅ 基础配置加载成功！\n\n";
+                    result += `📊 配置信息:\n`;
+                    result += `  - 配置文件: ${configPath}\n`;
+                    result += `  - 网站标题: ${config.site?.title || "未设置"}\n`;
+                    result += `  - 网站描述: ${config.site?.description || "未设置"}\n`;
+                    result += `  - 菜单项数: ${config.menuItems?.length || 0}\n\n`;
+
+                    result += `🔍 格式检测:\n`;
+                    result += `  - 优化格式: ${isOptimized ? "✅ 是" : "❌ 否"}\n`;
+                    result += `  - 菜单结构: ${hasMenuItems ? "✅ 正确" : "❌ 错误"}\n`;
+                    result += `  - 分类索引: ${hasCategoryIndex ? "✅ 存在" : "❌ 缺失"}\n\n`;
+
+                    if (config.optimization) {
+                        result += `📈 优化统计:\n`;
+                        result += `  - 版本: ${config.optimization.version}\n`;
+                        result += `  - 总分类数: ${config.optimization.totalCategories}\n`;
+                        result += `  - 总网站数: ${config.optimization.totalSites}\n`;
+                        result += `  - 压缩比例: ${config.optimization.compressionRatio}%\n`;
+                        result += `  - 生成时间: ${new Date(config.optimization.generatedAt).toLocaleString()}\n`;
+                    }
+
+                    resultDiv.className = "result success";
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ 基础配置测试失败:\n${error.message}`;
+                }
+            }
+
+            // 测试ConfigManager
+            async function testConfigManager() {
+                const resultDiv = document.getElementById(
+                    "configManagerResult",
+                );
+                resultDiv.style.display = "block";
+                resultDiv.className = "result info";
+                resultDiv.textContent = "🔄 正在测试ConfigManager...";
+
+                try {
+                    // 使用真正的ConfigManager检测逻辑
+                    const startTime = performance.now();
+
+                    const configPath = getSelectedConfigPath();
+                    const response = await fetch(configPath);
+                    const config = await response.json();
+
+                    const loadTime = performance.now() - startTime;
+
+                    // 真正的ConfigManager检测逻辑
+                    let confidence = 0;
+                    let isOptimized = false;
+                    let hasOptimizationField = false;
+                    let hasCategoryIndexes = false;
+                    let hasPreviewSites = false;
+                    let estimatedCategories = 0;
+                    let details = [];
+
+                    // 1. 检查optimization字段 (权重: 40%)
+                    if (
+                        config.optimization &&
+                        typeof config.optimization === "object"
+                    ) {
+                        hasOptimizationField = true;
+                        details.push("✅ 检测到optimization字段");
+                        if (config.optimization.enabled === true) {
+                            confidence += 0.4;
+                            isOptimized = true;
+                            details.push("✅ optimization.enabled = true");
+                        }
+                    } else {
+                        details.push("❌ 未检测到optimization字段");
+                    }
+
+                    // 2. 检查categoryIndex字段 (权重: 40%)
+                    if (config.menuItems && Array.isArray(config.menuItems)) {
+                        details.push("✅ 菜单结构正确");
+
+                        const itemsWithCategoryIndex = config.menuItems.filter(
+                            (item) =>
+                                typeof item.categoryIndex === "number" &&
+                                item.categoryIndex >= 0,
+                        );
+
+                        if (itemsWithCategoryIndex.length > 0) {
+                            hasCategoryIndexes = true;
+                            confidence += 0.4;
+                            isOptimized = true;
+                            details.push(
+                                `✅ 检测到${itemsWithCategoryIndex.length}个categoryIndex字段`,
+                            );
+
+                            // 计算分类数量 (包括submenu)
+                            const allIndexes = [];
+                            config.menuItems.forEach((item) => {
+                                if (
+                                    typeof item.categoryIndex === "number" &&
+                                    item.categoryIndex >= 0
+                                ) {
+                                    allIndexes.push(item.categoryIndex);
+                                }
+                                if (
+                                    item.submenu &&
+                                    Array.isArray(item.submenu)
+                                ) {
+                                    item.submenu.forEach((sub) => {
+                                        if (
+                                            typeof sub.categoryIndex ===
+                                                "number" &&
+                                            sub.categoryIndex >= 0
+                                        ) {
+                                            allIndexes.push(sub.categoryIndex);
+                                        }
+                                    });
+                                }
+                            });
+                            estimatedCategories =
+                                allIndexes.length > 0
+                                    ? Math.max(...allIndexes) + 1
+                                    : 0;
+                            details.push(
+                                `📊 估算分类数: ${estimatedCategories}`,
+                            );
                         } else {
+                            details.push("❌ 未检测到categoryIndex字段");
+                        }
+                    } else {
+                        details.push("❌ 菜单结构错误");
+                    }
+
+                    // 3. 检查previewSites字段 (权重: 20%)
+                    if (
+                        config.menuItems &&
+                        config.menuItems.some(
+                            (item) =>
+                                Array.isArray(item.previewSites) ||
+                                (item.submenu &&
+                                    item.submenu.some((sub) =>
+                                        Array.isArray(sub.previewSites),
+                                    )),
+                        )
+                    ) {
+                        hasPreviewSites = true;
+                        confidence += 0.2;
+                        isOptimized = true;
+                        details.push("✅ 检测到previewSites字段");
+                    } else {
+                        details.push("❌ 未检测到previewSites字段");
+                    }
+
+                    // 4. 检查传统格式特征
+                    if (
+                        !isOptimized &&
+                        config.menuItems &&
+                        config.menuItems.some(
+                            (item) =>
+                                Array.isArray(item.sites) ||
+                                (item.submenu &&
+                                    item.submenu.some((sub) =>
+                                        Array.isArray(sub.sites),
+                                    )),
+                        )
+                    ) {
+                        confidence = 0.95; // 传统配置的高置信度
+                        details.push("✅ 检测到传统格式sites字段");
+                    }
+
+                    // 5. 检查categoryMap字段 (传统格式特征)
+                    if (
+                        config.categoryMap &&
+                        typeof config.categoryMap === "object"
+                    ) {
+                        if (!isOptimized) {
+                            confidence += 0.05; // 增强传统格式置信度
+                            details.push("✅ 检测到categoryMap字段 (传统格式)");
+                        }
+                    }
+
+                    const confidencePercent = Math.round(confidence * 100);
+                    const formatType = isOptimized
+                        ? "optimized"
+                        : "traditional";
+
+                    let result = "🔧 ConfigManager测试结果 (真实检测逻辑):\n\n";
+                    result += `📊 检测结果:\n`;
+                    result += `  - 配置文件: ${configPath}\n`;
+                    result += `  - 格式类型: ${formatType === "optimized" ? "优化格式" : "传统格式"}\n`;
+                    result += `  - 置信度: ${confidencePercent}%\n`;
+                    result += `  - 加载时间: ${loadTime.toFixed(2)}ms\n`;
+                    result += `  - 是否优化: ${isOptimized ? "是" : "否"}\n\n`;
+
+                    result += `🔍 检测详情:\n`;
+                    details.forEach((detail) => {
+                        result += `  ${detail}\n`;
+                    });
+
+                    if (isOptimized && config.optimization) {
+                        result += `\n📈 优化信息:\n`;
+                        result += `  - 版本: ${config.optimization.version || "N/A"}\n`;
+                        result += `  - 总分类数: ${config.optimization.totalCategories || "N/A"}\n`;
+                        result += `  - 总网站数: ${config.optimization.totalSites || "N/A"}\n`;
+                        result += `  - 压缩比例: ${config.optimization.compressionRatio || "N/A"}%\n`;
+                    }
+
+                    resultDiv.className =
+                        confidencePercent >= 90
+                            ? "result success"
+                            : "result error";
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ ConfigManager测试失败:\n${error.message}`;
+                }
+            }
+
+            // 测试分类文件
+            async function testCategoryFiles() {
+                const resultDiv = document.getElementById("categoryResult");
+                const statsDiv = document.getElementById("categoryStats");
+                const listDiv = document.getElementById("categoryList");
+
+                resultDiv.style.display = "block";
+                resultDiv.className = "result info";
+                resultDiv.textContent = "🔄 正在测试分类文件...";
+
+                try {
+                    // 先获取基础配置
+                    const configPath = getSelectedConfigPath();
+                    const configResponse = await fetch(configPath);
+                    const config = await configResponse.json();
+
+                    const totalCategories =
+                        config.optimization?.totalCategories || 0;
+                    let successCount = 0;
+                    let totalSites = 0;
+                    let categoryDetails = [];
+
+                    // 测试每个分类文件
+                    for (let i = 0; i < totalCategories; i++) {
+                        try {
+                            const categoryResponse = await fetch(
+                                `/categories/${i}.json`,
+                            );
+                            if (categoryResponse.ok) {
+                                const categoryData =
+                                    await categoryResponse.json();
+                                successCount++;
+                                totalSites += categoryData.sites?.length || 0;
+
+                                categoryDetails.push({
+                                    id: i,
+                                    name: categoryData.categoryName,
+                                    siteCount: categoryData.sites?.length || 0,
+                                    status: "✅",
+                                });
+                            } else {
+                                categoryDetails.push({
+                                    id: i,
+                                    name: `分类${i}`,
+                                    siteCount: 0,
+                                    status: "❌",
+                                });
+                            }
+                        } catch (error) {
                             categoryDetails.push({
                                 id: i,
                                 name: `分类${i}`,
                                 siteCount: 0,
-                                status: '❌'
+                                status: "❌",
                             });
                         }
-                    } catch (error) {
-                        categoryDetails.push({
-                            id: i,
-                            name: `分类${i}`,
-                            siteCount: 0,
-                            status: '❌'
-                        });
                     }
-                }
 
-                // 显示统计信息
-                statsDiv.style.display = 'grid';
-                statsDiv.innerHTML = `
+                    // 显示统计信息
+                    statsDiv.style.display = "grid";
+                    statsDiv.innerHTML = `
                     <div class="stat-card">
                         <div class="stat-value">${totalCategories}</div>
                         <div class="stat-label">总分类数</div>
@@ -648,183 +798,203 @@ export const prerender = false;
                         <div class="stat-label">总网站数</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">${Math.round(successCount/totalCategories*100)}%</div>
+                        <div class="stat-value">${Math.round((successCount / totalCategories) * 100)}%</div>
                         <div class="stat-label">成功率</div>
                     </div>
                 `;
 
-                // 显示分类列表
-                listDiv.style.display = 'block';
-                listDiv.innerHTML = categoryDetails.map(cat => `
+                    // 显示分类列表
+                    listDiv.style.display = "block";
+                    listDiv.innerHTML = categoryDetails
+                        .map(
+                            (cat) => `
                     <div class="category-item">
                         <span>${cat.status} ${cat.name}</span>
                         <span>${cat.siteCount} 个网站</span>
                     </div>
-                `).join('');
+                `,
+                        )
+                        .join("");
 
-                let result = `📁 分类文件测试完成!\n\n`;
-                result += `📊 测试结果:\n`;
-                result += `  - 总分类数: ${totalCategories}\n`;
-                result += `  - 成功加载: ${successCount}\n`;
-                result += `  - 失败数量: ${totalCategories - successCount}\n`;
-                result += `  - 成功率: ${Math.round(successCount/totalCategories*100)}%\n`;
-                result += `  - 总网站数: ${totalSites}\n`;
+                    let result = `📁 分类文件测试完成!\n\n`;
+                    result += `📊 测试结果:\n`;
+                    result += `  - 总分类数: ${totalCategories}\n`;
+                    result += `  - 成功加载: ${successCount}\n`;
+                    result += `  - 失败数量: ${totalCategories - successCount}\n`;
+                    result += `  - 成功率: ${Math.round((successCount / totalCategories) * 100)}%\n`;
+                    result += `  - 总网站数: ${totalSites}\n`;
 
-                resultDiv.className = successCount === totalCategories ? 'result success' : 'result error';
-                resultDiv.textContent = result;
-
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ 分类文件测试失败:\n${error.message}`;
+                    resultDiv.className =
+                        successCount === totalCategories
+                            ? "result success"
+                            : "result error";
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ 分类文件测试失败:\n${error.message}`;
+                }
             }
-        }
 
-        // 测试懒加载
-        async function testLazyLoading() {
-            const resultDiv = document.getElementById('lazyLoadResult');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在测试懒加载...';
+            // 测试懒加载
+            async function testLazyLoading() {
+                const resultDiv = document.getElementById("lazyLoadResult");
+                resultDiv.style.display = "block";
+                resultDiv.className = "result info";
+                resultDiv.textContent = "🔄 正在测试懒加载...";
 
-            try {
-                const startTime = performance.now();
+                try {
+                    const startTime = performance.now();
 
-                // 模拟懒加载场景：先加载基础配置，再按需加载分类
-                const configPath = getSelectedConfigPath();
-                const configResponse = await fetch(configPath);
-                const config = await configResponse.json();
-                const configLoadTime = performance.now() - startTime;
+                    // 模拟懒加载场景：先加载基础配置，再按需加载分类
+                    const configPath = getSelectedConfigPath();
+                    const configResponse = await fetch(configPath);
+                    const config = await configResponse.json();
+                    const configLoadTime = performance.now() - startTime;
 
-                // 随机选择几个分类进行懒加载测试
-                const testCategories = [0, 1, 2]; // 测试前3个分类
-                let lazyLoadResults = [];
+                    // 随机选择几个分类进行懒加载测试
+                    const testCategories = [0, 1, 2]; // 测试前3个分类
+                    let lazyLoadResults = [];
 
-                for (const categoryId of testCategories) {
-                    const categoryStartTime = performance.now();
-                    try {
-                        const categoryResponse = await fetch(`/categories/${categoryId}.json`);
-                        const categoryData = await categoryResponse.json();
-                        const categoryLoadTime = performance.now() - categoryStartTime;
-                        
-                        lazyLoadResults.push({
-                            id: categoryId,
-                            name: categoryData.categoryName,
-                            loadTime: categoryLoadTime,
-                            siteCount: categoryData.sites.length,
-                            success: true
-                        });
-                    } catch (error) {
-                        lazyLoadResults.push({
-                            id: categoryId,
-                            name: `分类${categoryId}`,
-                            loadTime: 0,
-                            siteCount: 0,
-                            success: false
-                        });
+                    for (const categoryId of testCategories) {
+                        const categoryStartTime = performance.now();
+                        try {
+                            const categoryResponse = await fetch(
+                                `/categories/${categoryId}.json`,
+                            );
+                            const categoryData = await categoryResponse.json();
+                            const categoryLoadTime =
+                                performance.now() - categoryStartTime;
+
+                            lazyLoadResults.push({
+                                id: categoryId,
+                                name: categoryData.categoryName,
+                                loadTime: categoryLoadTime,
+                                siteCount: categoryData.sites.length,
+                                success: true,
+                            });
+                        } catch (error) {
+                            lazyLoadResults.push({
+                                id: categoryId,
+                                name: `分类${categoryId}`,
+                                loadTime: 0,
+                                siteCount: 0,
+                                success: false,
+                            });
+                        }
                     }
+
+                    const totalTime = performance.now() - startTime;
+
+                    let result = `⚡ 懒加载测试完成!\n\n`;
+                    result += `📊 性能结果:\n`;
+                    result += `  - 基础配置加载: ${configLoadTime.toFixed(2)}ms\n`;
+                    result += `  - 总测试时间: ${totalTime.toFixed(2)}ms\n\n`;
+
+                    result += `📁 分类加载测试:\n`;
+                    lazyLoadResults.forEach((cat) => {
+                        const status = cat.success ? "✅" : "❌";
+                        result += `  ${status} ${cat.name}: ${cat.loadTime.toFixed(2)}ms (${cat.siteCount}个网站)\n`;
+                    });
+
+                    const successCount = lazyLoadResults.filter(
+                        (cat) => cat.success,
+                    ).length;
+                    result += `\n🎯 懒加载优势:\n`;
+                    result += `  - 首次加载仅需基础配置 (${configLoadTime.toFixed(2)}ms)\n`;
+                    result += `  - 按需加载分类数据，减少初始加载时间\n`;
+                    result += `  - 测试成功率: ${Math.round((successCount / testCategories.length) * 100)}%\n`;
+
+                    resultDiv.className =
+                        successCount === testCategories.length
+                            ? "result success"
+                            : "result error";
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ 懒加载测试失败:\n${error.message}`;
                 }
-
-                const totalTime = performance.now() - startTime;
-
-                let result = `⚡ 懒加载测试完成!\n\n`;
-                result += `📊 性能结果:\n`;
-                result += `  - 基础配置加载: ${configLoadTime.toFixed(2)}ms\n`;
-                result += `  - 总测试时间: ${totalTime.toFixed(2)}ms\n\n`;
-                
-                result += `📁 分类加载测试:\n`;
-                lazyLoadResults.forEach(cat => {
-                    const status = cat.success ? '✅' : '❌';
-                    result += `  ${status} ${cat.name}: ${cat.loadTime.toFixed(2)}ms (${cat.siteCount}个网站)\n`;
-                });
-
-                const successCount = lazyLoadResults.filter(cat => cat.success).length;
-                result += `\n🎯 懒加载优势:\n`;
-                result += `  - 首次加载仅需基础配置 (${configLoadTime.toFixed(2)}ms)\n`;
-                result += `  - 按需加载分类数据，减少初始加载时间\n`;
-                result += `  - 测试成功率: ${Math.round(successCount/testCategories.length*100)}%\n`;
-
-                resultDiv.className = successCount === testCategories.length ? 'result success' : 'result error';
-                resultDiv.textContent = result;
-
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ 懒加载测试失败:\n${error.message}`;
             }
-        }
 
-        // 测试性能
-        async function testPerformance() {
-            const resultDiv = document.getElementById('performanceResult');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在测试性能...';
+            // 测试性能
+            async function testPerformance() {
+                const resultDiv = document.getElementById("performanceResult");
+                resultDiv.style.display = "block";
+                resultDiv.className = "result info";
+                resultDiv.textContent = "🔄 正在测试性能...";
 
-            try {
-                const startTime = performance.now();
+                try {
+                    const startTime = performance.now();
 
-                // 测试基础配置文件大小和加载时间
-                const configPath = getSelectedConfigPath();
-                const configResponse = await fetch(configPath);
-                const configText = await configResponse.text();
-                const config = JSON.parse(configText);
-                const configSize = new Blob([configText]).size;
-                const configLoadTime = performance.now() - startTime;
+                    // 测试基础配置文件大小和加载时间
+                    const configPath = getSelectedConfigPath();
+                    const configResponse = await fetch(configPath);
+                    const configText = await configResponse.text();
+                    const config = JSON.parse(configText);
+                    const configSize = new Blob([configText]).size;
+                    const configLoadTime = performance.now() - startTime;
 
-                // 测试分类文件大小
-                let totalCategorySize = 0;
-                let categoryLoadTimes = [];
-                const testCategoryCount = Math.min(5, config.optimization?.totalCategories || 0);
+                    // 测试分类文件大小
+                    let totalCategorySize = 0;
+                    let categoryLoadTimes = [];
+                    const testCategoryCount = Math.min(
+                        5,
+                        config.optimization?.totalCategories || 0,
+                    );
 
-                for (let i = 0; i < testCategoryCount; i++) {
-                    const categoryStartTime = performance.now();
-                    try {
-                        const categoryResponse = await fetch(`/categories/${i}.json`);
-                        const categoryText = await categoryResponse.text();
-                        const categorySize = new Blob([categoryText]).size;
-                        const categoryLoadTime = performance.now() - categoryStartTime;
-                        
-                        totalCategorySize += categorySize;
-                        categoryLoadTimes.push(categoryLoadTime);
-                    } catch (error) {
-                        // 忽略加载失败的分类
+                    for (let i = 0; i < testCategoryCount; i++) {
+                        const categoryStartTime = performance.now();
+                        try {
+                            const categoryResponse = await fetch(
+                                `/categories/${i}.json`,
+                            );
+                            const categoryText = await categoryResponse.text();
+                            const categorySize = new Blob([categoryText]).size;
+                            const categoryLoadTime =
+                                performance.now() - categoryStartTime;
+
+                            totalCategorySize += categorySize;
+                            categoryLoadTimes.push(categoryLoadTime);
+                        } catch (error) {
+                            // 忽略加载失败的分类
+                        }
                     }
+
+                    const avgCategoryLoadTime =
+                        categoryLoadTimes.length > 0
+                            ? categoryLoadTimes.reduce((a, b) => a + b, 0) /
+                              categoryLoadTimes.length
+                            : 0;
+
+                    const totalTime = performance.now() - startTime;
+
+                    let result = `📊 性能测试结果:\n\n`;
+                    result += `📄 基础配置:\n`;
+                    result += `  - 文件大小: ${(configSize / 1024).toFixed(2)} KB\n`;
+                    result += `  - 加载时间: ${configLoadTime.toFixed(2)} ms\n\n`;
+
+                    result += `📁 分类文件 (测试${testCategoryCount}个):\n`;
+                    result += `  - 平均大小: ${(totalCategorySize / testCategoryCount / 1024).toFixed(2)} KB\n`;
+                    result += `  - 平均加载时间: ${avgCategoryLoadTime.toFixed(2)} ms\n\n`;
+
+                    result += `🚀 性能优势:\n`;
+                    result += `  - 首次加载仅需基础配置 (${(configSize / 1024).toFixed(2)} KB)\n`;
+                    result += `  - 分类数据按需加载，减少带宽使用\n`;
+                    result += `  - 总测试时间: ${totalTime.toFixed(2)} ms\n`;
+
+                    if (config.optimization) {
+                        result += `\n📈 优化统计 (来自配置):\n`;
+                        result += `  - 原始大小: ${config.optimization.originalSizeKB} KB\n`;
+                        result += `  - 优化后大小: ${config.optimization.optimizedSizeKB} KB\n`;
+                        result += `  - 压缩比例: ${config.optimization.compressionRatio}%\n`;
+                    }
+
+                    resultDiv.className = "result success";
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ 性能测试失败:\n${error.message}`;
                 }
-
-                const avgCategoryLoadTime = categoryLoadTimes.length > 0 
-                    ? categoryLoadTimes.reduce((a, b) => a + b, 0) / categoryLoadTimes.length 
-                    : 0;
-
-                const totalTime = performance.now() - startTime;
-
-                let result = `📊 性能测试结果:\n\n`;
-                result += `📄 基础配置:\n`;
-                result += `  - 文件大小: ${(configSize / 1024).toFixed(2)} KB\n`;
-                result += `  - 加载时间: ${configLoadTime.toFixed(2)} ms\n\n`;
-                
-                result += `📁 分类文件 (测试${testCategoryCount}个):\n`;
-                result += `  - 平均大小: ${(totalCategorySize / testCategoryCount / 1024).toFixed(2)} KB\n`;
-                result += `  - 平均加载时间: ${avgCategoryLoadTime.toFixed(2)} ms\n\n`;
-                
-                result += `🚀 性能优势:\n`;
-                result += `  - 首次加载仅需基础配置 (${(configSize / 1024).toFixed(2)} KB)\n`;
-                result += `  - 分类数据按需加载，减少带宽使用\n`;
-                result += `  - 总测试时间: ${totalTime.toFixed(2)} ms\n`;
-
-                if (config.optimization) {
-                    result += `\n📈 优化统计 (来自配置):\n`;
-                    result += `  - 原始大小: ${config.optimization.originalSizeKB} KB\n`;
-                    result += `  - 优化后大小: ${config.optimization.optimizedSizeKB} KB\n`;
-                    result += `  - 压缩比例: ${config.optimization.compressionRatio}%\n`;
-                }
-
-                resultDiv.className = 'result success';
-                resultDiv.textContent = result;
-
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ 性能测试失败:\n${error.message}`;
             }
-        }
-    </script>
-</body>
+        </script>
+    </body>
 </html>

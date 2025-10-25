@@ -1,0 +1,92 @@
+{
+  "name": "Affiliate导航 - 专业营销导航网站",
+  "short_name": "Affiliate导航",
+  "description": "专业的Affiliate营销导航网站，提供追踪系统、流量平台、联盟网络等资源",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2937f0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "productivity",
+    "business",
+    "navigation"
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "搜索网站",
+      "short_name": "搜索",
+      "description": "快速搜索导航网站",
+      "url": "/?search=true",
+      "icons": [
+        {
+          "src": "/icon-search.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "提交收录",
+      "short_name": "提交",
+      "description": "提交新网站收录",
+      "url": "/submit",
+      "icons": [
+        {
+          "src": "/icon-submit.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "scope": "/",
+  "iarc_rating_id": ""
+}

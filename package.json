@@ -15,7 +15,19 @@
     "copy-config:watch": "node scripts/copy-config.js --watch",
     "check-deps": "node scripts/check-dependencies.cjs",
     "check": "pnpm astro check && pnpm run check-deps",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "lint": "eslint . --ext .ts,.astro",
+    "lint:fix": "eslint . --ext .ts,.astro --fix",
+    "format": "prettier --write \"**/*.{ts,astro,md,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,astro,md,json}\"",
+    "validate": "pnpm run type-check && pnpm run lint && pnpm run format:check && pnpm run test",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) {}\""
   },
   "dependencies": {
     "@astrojs/check": "^0.9.5",

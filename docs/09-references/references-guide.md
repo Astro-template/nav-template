@@ -119,7 +119,7 @@
 
 ### 按技术栈查找
 - **前端技术**: Astro, TypeScript, CSS
-- **构建工具**: Vite, npm scripts, 打包优化
+- **构建工具**: Vite, pnpm scripts, 打包优化
 - **部署平台**: GitHub Actions, Netlify, Vercel
 - **测试工具**: Jest, Playwright, 性能测试
 
@@ -168,6 +168,6 @@
 
 ---
 
-**文档版本**: v1.0  
-**创建日期**: 2024-12-07  
+**文档版本**: v1.0
+**创建日期**: 2024-12-07
 **维护者**: Augment Agent

@@ -1,0 +1,17 @@
+# robots.txt for Astro-nav
+
+User-agent: *
+Allow: /
+
+# Disallow admin and test pages
+Disallow: /api/
+Disallow: /tests/
+Disallow: /config-generator
+Disallow: /table-import
+Disallow: /week3-*
+
+# Sitemap location
+Sitemap: https://affnav.github.io/sitemap-index.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1

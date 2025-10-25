@@ -18,9 +18,9 @@
   "include": ["src/**/*"],
   "exclude": [
     "node_modules",
-    "src/pages/tests/**/*",
-    "src/pages/api/**/*",
-    "src/pages/week3-final-test.astro",
-    "src/pages/config-generator.astro"
+    "src/pages/dev-tools/**/*",
+    "src/pages/api/dev/**/*",
+    "src/pages/config-generator.astro",
+    "src/pages/table-import.astro"
   ]
 }

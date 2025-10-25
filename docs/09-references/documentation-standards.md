@@ -21,7 +21,7 @@
 
 ```
 docs/
-├── _index.md                           # � 文档总入口 (纯索引)
+├── _index.md                           #  文档总入口 (纯索引)
 │
 ├── 01-getting-started/                 # 🚀 快速开始
 ├── 02-user-guides/                     # 👥 用户指南

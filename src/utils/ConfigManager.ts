@@ -58,18 +58,31 @@ export class ConfigManager {
    * 智能检测配置文件路径
    */
   private detectConfigPath(): string {
-    // 开发和生产环境都使用相同路径
-    // static/ 文件夹在开发时存在，构建后会复制到 dist/
-    return "/config.json"; // 对应 static/config.json
+    // 在服务器端（SSR）和客户端都使用相对URL
+    // Astro会在构建时将static/复制到dist/根目录
+    return "/config.json";
   }
 
   /**
-   * 带重试机制的fetch请求
+   * 检测是否在服务器端运行
+   */
+  private isServer(): boolean {
+    return typeof window === "undefined";
+  }
+
+  /**
+   * 带重试机制的数据获取（支持服务器端和客户端）
    */
   private async fetchWithRetry(
     url: string,
     retries: number = this.retryConfig.maxRetries,
   ): Promise<Response> {
+    // 服务器端使用文件系统
+    if (this.isServer()) {
+      return this.fetchFromFileSystem(url);
+    }
+
+    // 客户端使用fetch
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const controller = new AbortController();
@@ -101,13 +114,44 @@ export class ConfigManager {
           error,
         );
 
-        // 指数退避延迟
-        const delay = this.retryConfig.retryDelay * Math.pow(2, attempt);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        // 延迟后重试
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.retryConfig.retryDelay),
+        );
       }
     }
 
-    throw new Error("重试次数已达上限");
+    throw new Error("fetchWithRetry: 不应该到达这里");
+  }
+
+  /**
+   * 从文件系统读取配置（服务器端）
+   */
+  private async fetchFromFileSystem(filePath: string): Promise<Response> {
+    try {
+      // 动态导入仅在服务器端可用的模块
+      const fs = await import("fs/promises");
+      const path = await import("path");
+
+      // 将URL路径转换为文件系统路径
+      // /config.json -> static/config.json
+      let fsPath = filePath;
+      if (filePath.startsWith("/")) {
+        fsPath = `./static${filePath}`;
+      }
+
+      // 转换为绝对路径
+      const absolutePath = path.resolve(process.cwd(), fsPath);
+      const content = await fs.readFile(absolutePath, "utf-8");
+
+      // 模拟 Response 对象
+      return new Response(content, {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      throw new Error(`Failed to read file ${filePath}: ${error}`);
+    }
   }
 
   /**
@@ -573,7 +617,7 @@ export class ConfigManager {
       }
 
       // 构建分类数据文件路径
-      const categoryPath = `/categories/category-${categoryIndex}.json`;
+      const categoryPath = `/categories/${categoryIndex}.json`;
 
       // 发起带重试机制的网络请求
       const response = await this.fetchWithRetry(categoryPath);

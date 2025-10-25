@@ -200,7 +200,7 @@ const systemHealth = {
   cacheStats: lazyLoader.getCacheStats(),
   localStorageStats: defaultLocalStorageCache.getStats(),
   performanceScore: performanceMonitor.getPerformanceScore(),
-  systemScore: performanceMonitor.getSystemHealth().score
+  systemScore: performanceMonitor.getPerformanceScore()
 };
 ---
 
