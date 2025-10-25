@@ -1,48 +1,49 @@
-import type { APIRoute } from 'astro';
-import * as XLSX from 'xlsx';
-import Papa from 'papaparse';
-import JSZip from 'jszip';
-import busboy from 'busboy';
-import { Readable } from 'stream';
-import { splitConfig } from '../../utils/configSplitter';
+import type { APIRoute } from "astro";
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
+import JSZip from "jszip";
+import busboy from "busboy";
+import { Readable } from "stream";
+import { splitConfig } from "../../utils/configSplitter";
 import type {
   OptimizationOptions,
   ConfigResult,
   OptimizedConfigResult,
-  TraditionalConfigResult
-} from '../../types/optimization';
-import type { MenuTableRow, SiteTableRow, TableImportResult } from '../../types/tableImport';
+  TraditionalConfigResult,
+  GenerateConfigRequest,
+  GenerateConfigResponse,
+  DEFAULT_OPTIMIZATION_OPTIONS,
+} from "../../types/optimization";
+import type {
+  MenuTableRow,
+  SiteTableRow,
+  TableImportResult,
+} from "../../types/tableImport";
 
 // 强制此API路由为服务器端渲染
 export const prerender = false;
-import type { 
-  GenerateConfigRequest, 
-  GenerateConfigResponse,
-  OptimizationOptions,
-  ConfigResult,
-  DEFAULT_OPTIMIZATION_OPTIONS
-} from '../../types/optimization';
-import type { MenuTableRow, SiteTableRow, TableImportResult } from '../../types/tableImport';
-import { splitConfig } from '../../utils/configSplitter';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    console.log('=== 配置生成API ===');
-    console.log('Method:', request.method);
-    console.log('URL:', request.url);
+    console.log("=== 配置生成API ===");
+    console.log("Method:", request.method);
+    console.log("URL:", request.url);
 
     // 检查Content-Type
-    const contentType = request.headers.get('content-type');
-    console.log('Content-Type:', contentType);
+    const contentType = request.headers.get("content-type");
+    console.log("Content-Type:", contentType);
 
-    if (!contentType || !contentType.includes('multipart/form-data')) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: `无效的Content-Type: ${contentType}。请使用multipart/form-data格式上传文件。`
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (!contentType || !contentType.includes("multipart/form-data")) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `无效的Content-Type: ${contentType}。请使用multipart/form-data格式上传文件。`,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     // 使用busboy解析multipart数据
@@ -51,200 +52,224 @@ export const POST: APIRoute = async ({ request }) => {
     const stream = Readable.from(buffer);
 
     const bb = busboy({
-      headers: { 'content-type': contentType }
+      headers: { "content-type": contentType },
     });
 
     // 存储解析结果
     const formFields: Record<string, string> = {};
-    const files: Record<string, { buffer: Buffer; filename: string; mimeType: string }> = {};
+    const files: Record<
+      string,
+      { buffer: Buffer; filename: string; mimeType: string }
+    > = {};
 
     // 解析表单数据
-    const parseResult = await new Promise<{ formFields: typeof formFields; files: typeof files }>((resolve, reject) => {
-      bb.on('field', (fieldname, value) => {
+    const parseResult = await new Promise<{
+      formFields: typeof formFields;
+      files: typeof files;
+    }>((resolve, reject) => {
+      bb.on("field", (fieldname, value) => {
         console.log(`表单字段: ${fieldname} = ${value}`);
         formFields[fieldname] = value;
       });
 
-      bb.on('file', (fieldname, file, info) => {
+      bb.on("file", (fieldname, file, info) => {
         console.log(`文件字段: ${fieldname}`, info);
         const { filename, mimeType } = info;
 
         let fileBuffer = Buffer.alloc(0);
 
-        file.on('data', (data) => {
+        file.on("data", (data) => {
           fileBuffer = Buffer.concat([fileBuffer, data]);
         });
 
-        file.on('end', () => {
+        file.on("end", () => {
           console.log(`文件 ${fieldname} 上传完成，大小: ${fileBuffer.length}`);
           files[fieldname] = {
             buffer: fileBuffer,
             filename,
-            mimeType
+            mimeType,
           };
         });
       });
 
-      bb.on('finish', () => {
-        console.log('Busboy解析完成');
+      bb.on("finish", () => {
+        console.log("Busboy解析完成");
         resolve({ formFields, files });
       });
 
-      bb.on('error', (error) => {
-        console.error('Busboy解析错误:', error);
+      bb.on("error", (error) => {
+        console.error("Busboy解析错误:", error);
         reject(error);
       });
 
       stream.pipe(bb);
     });
-    
+
     // 获取文件
     const menuFile = parseResult.files.menuFile;
     const siteFile = parseResult.files.siteFile;
 
     // 获取网站信息
-    const siteTitle = parseResult.formFields.siteTitle || '我的导航网站';
-    const siteDescription = parseResult.formFields.siteDescription || '专业的导航平台';
-    const logoText = parseResult.formFields.logoText || 'MyNav';
+    const siteTitle = parseResult.formFields.siteTitle || "我的导航网站";
+    const siteDescription =
+      parseResult.formFields.siteDescription || "专业的导航平台";
+    const logoText = parseResult.formFields.logoText || "MyNav";
 
     // 获取优化选项
-    const optimizationEnabled = parseResult.formFields.optimizationEnabled === 'on';
+    const optimizationEnabled =
+      parseResult.formFields.optimizationEnabled === "on";
     const previewCount = parseInt(parseResult.formFields.previewCount) || 3;
-    const chunkSizeLimit = parseInt(parseResult.formFields.chunkSizeLimit) || 100;
-    const enablePreload = parseResult.formFields.enablePreload === 'on';
-    
+    const chunkSizeLimit =
+      parseInt(parseResult.formFields.chunkSizeLimit) || 100;
+    const enablePreload = parseResult.formFields.enablePreload === "on";
+
     // 验证文件
     if (!menuFile || !siteFile) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: '请上传菜单文件和网站文件'
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "请上传菜单文件和网站文件",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
-    
+
     // 解析菜单文件
     const menuResult = await parseMenuFile(menuFile);
     if (!menuResult.success) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: `菜单文件解析失败: ${menuResult.error}`
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `菜单文件解析失败: ${menuResult.error}`,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
-    
+
     // 解析网站文件
     const siteResult = await parseSiteFile(siteFile);
     if (!siteResult.success) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: `网站文件解析失败: ${siteResult.error}`
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `网站文件解析失败: ${siteResult.error}`,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
-    
+
     const siteInfo = {
       title: siteTitle,
       description: siteDescription,
-      logoText
+      logoText,
     };
-    
+
     const optimizationOptions: OptimizationOptions = {
       enabled: optimizationEnabled,
       previewCount,
       chunkSizeLimit,
-      enablePreload
+      enablePreload,
     };
-    
+
     // 生成配置
     const result = await generateConfig(
       menuResult.data!,
       siteResult.data!,
       siteInfo,
-      optimizationOptions
+      optimizationOptions,
     );
-    
+
     if (optimizationEnabled) {
       // 生成优化版本 - ZIP文件
       const zipBlob = await createOptimizedZip(result);
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const filename = `optimized-config-${timestamp}.zip`;
-      
+
       return new Response(zipBlob, {
         headers: {
-          'Content-Type': 'application/zip',
-          'Content-Disposition': `attachment; filename="${filename}"`,
-          'X-Config-Info': JSON.stringify({
+          "Content-Type": "application/zip",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "X-Config-Info": JSON.stringify({
             success: true,
             data: {
-              fileType: 'zip',
+              fileType: "zip",
               filename,
-              optimization: result.optimization
-            }
-          })
-        }
+              optimization: result.optimization,
+            },
+          }),
+        },
       });
     } else {
       // 生成传统版本 - JSON文件
       const traditionalResult = result as TraditionalConfigResult;
       const configJson = JSON.stringify(traditionalResult.config, null, 2);
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const filename = `config-${timestamp}.json`;
 
       return new Response(configJson, {
         headers: {
-          'Content-Type': 'application/json',
-          'Content-Disposition': `attachment; filename="${filename}"`,
-          'X-Config-Info': JSON.stringify({
+          "Content-Type": "application/json",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "X-Config-Info": JSON.stringify({
             success: true,
             data: {
-              fileType: 'json',
+              fileType: "json",
               filename,
-              optimization: result.optimization
-            }
-          })
-        }
+              optimization: result.optimization,
+            },
+          }),
+        },
       });
     }
-    
   } catch (error) {
-    console.error('配置生成错误:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: `服务器错误: ${error instanceof Error ? error.message : '未知错误'}`
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error("配置生成错误:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: `服务器错误: ${error instanceof Error ? error.message : "未知错误"}`,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 };
 
 /**
  * 解析菜单文件
  */
-async function parseMenuFile(file: { buffer: Buffer; filename: string; mimeType: string }): Promise<TableImportResult<MenuTableRow>> {
+async function parseMenuFile(file: {
+  buffer: Buffer;
+  filename: string;
+  mimeType: string;
+}): Promise<TableImportResult<MenuTableRow>> {
   try {
     const fileName = file.filename.toLowerCase();
 
-    if (fileName.endsWith('.xlsx')) {
+    if (fileName.endsWith(".xlsx")) {
       return await parseMenuExcelFile(file);
-    } else if (fileName.endsWith('.csv')) {
+    } else if (fileName.endsWith(".csv")) {
       return await parseMenuCSVFile(file);
     } else {
       return {
         success: false,
-        error: '不支持的文件格式，请上传 .xlsx 或 .csv 文件'
+        error: "不支持的文件格式，请上传 .xlsx 或 .csv 文件",
       };
     }
   } catch (error) {
     return {
       success: false,
-      error: `文件解析失败: ${error instanceof Error ? error.message : '未知错误'}`
+      error: `文件解析失败: ${error instanceof Error ? error.message : "未知错误"}`,
     };
   }
 }
@@ -252,24 +277,28 @@ async function parseMenuFile(file: { buffer: Buffer; filename: string; mimeType:
 /**
  * 解析网站文件
  */
-async function parseSiteFile(file: { buffer: Buffer; filename: string; mimeType: string }): Promise<TableImportResult<SiteTableRow>> {
+async function parseSiteFile(file: {
+  buffer: Buffer;
+  filename: string;
+  mimeType: string;
+}): Promise<TableImportResult<SiteTableRow>> {
   try {
     const fileName = file.filename.toLowerCase();
 
-    if (fileName.endsWith('.xlsx')) {
+    if (fileName.endsWith(".xlsx")) {
       return await parseSiteExcelFile(file);
-    } else if (fileName.endsWith('.csv')) {
+    } else if (fileName.endsWith(".csv")) {
       return await parseSiteCSVFile(file);
     } else {
       return {
         success: false,
-        error: '不支持的文件格式，请上传 .xlsx 或 .csv 文件'
+        error: "不支持的文件格式，请上传 .xlsx 或 .csv 文件",
       };
     }
   } catch (error) {
     return {
       success: false,
-      error: `文件解析失败: ${error instanceof Error ? error.message : '未知错误'}`
+      error: `文件解析失败: ${error instanceof Error ? error.message : "未知错误"}`,
     };
   }
 }
@@ -277,9 +306,13 @@ async function parseSiteFile(file: { buffer: Buffer; filename: string; mimeType:
 /**
  * 解析菜单Excel文件
  */
-async function parseMenuExcelFile(file: { buffer: Buffer; filename: string; mimeType: string }): Promise<TableImportResult<MenuTableRow>> {
+async function parseMenuExcelFile(file: {
+  buffer: Buffer;
+  filename: string;
+  mimeType: string;
+}): Promise<TableImportResult<MenuTableRow>> {
   const data = new Uint8Array(file.buffer);
-  const workbook = XLSX.read(data, { type: 'array' });
+  const workbook = XLSX.read(data, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
 
@@ -290,8 +323,12 @@ async function parseMenuExcelFile(file: { buffer: Buffer; filename: string; mime
 /**
  * 解析菜单CSV文件
  */
-async function parseMenuCSVFile(file: { buffer: Buffer; filename: string; mimeType: string }): Promise<TableImportResult<MenuTableRow>> {
-  const text = file.buffer.toString('utf-8');
+async function parseMenuCSVFile(file: {
+  buffer: Buffer;
+  filename: string;
+  mimeType: string;
+}): Promise<TableImportResult<MenuTableRow>> {
+  const text = file.buffer.toString("utf-8");
 
   return new Promise((resolve) => {
     Papa.parse(text, {
@@ -302,10 +339,10 @@ async function parseMenuCSVFile(file: { buffer: Buffer; filename: string; mimeTy
       error: (error) => {
         resolve({
           success: false,
-          error: `CSV解析失败: ${error.message}`
+          error: `CSV解析失败: ${error.message}`,
         });
       },
-      encoding: 'UTF-8'
+      encoding: "UTF-8",
     });
   });
 }
@@ -313,9 +350,13 @@ async function parseMenuCSVFile(file: { buffer: Buffer; filename: string; mimeTy
 /**
  * 解析网站Excel文件
  */
-async function parseSiteExcelFile(file: { buffer: Buffer; filename: string; mimeType: string }): Promise<TableImportResult<SiteTableRow>> {
+async function parseSiteExcelFile(file: {
+  buffer: Buffer;
+  filename: string;
+  mimeType: string;
+}): Promise<TableImportResult<SiteTableRow>> {
   const data = new Uint8Array(file.buffer);
-  const workbook = XLSX.read(data, { type: 'array' });
+  const workbook = XLSX.read(data, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
 
@@ -326,8 +367,12 @@ async function parseSiteExcelFile(file: { buffer: Buffer; filename: string; mime
 /**
  * 解析网站CSV文件
  */
-async function parseSiteCSVFile(file: { buffer: Buffer; filename: string; mimeType: string }): Promise<TableImportResult<SiteTableRow>> {
-  const text = file.buffer.toString('utf-8');
+async function parseSiteCSVFile(file: {
+  buffer: Buffer;
+  filename: string;
+  mimeType: string;
+}): Promise<TableImportResult<SiteTableRow>> {
+  const text = file.buffer.toString("utf-8");
 
   return new Promise((resolve) => {
     Papa.parse(text, {
@@ -338,10 +383,10 @@ async function parseSiteCSVFile(file: { buffer: Buffer; filename: string; mimeTy
       error: (error) => {
         resolve({
           success: false,
-          error: `CSV解析失败: ${error.message}`
+          error: `CSV解析失败: ${error.message}`,
         });
       },
-      encoding: 'UTF-8'
+      encoding: "UTF-8",
     });
   });
 }
@@ -353,21 +398,29 @@ function processMenuData(rawData: string[][]): TableImportResult<MenuTableRow> {
   if (!rawData || rawData.length < 2) {
     return {
       success: false,
-      error: '文件内容为空或格式不正确'
+      error: "文件内容为空或格式不正确",
     };
   }
 
-  const headers = rawData[0].map(h => h?.toString().trim());
+  const headers = rawData[0].map((h) => h?.toString().trim());
   const rows = rawData.slice(1);
 
   // 验证菜单表头
-  const requiredHeaders = ['menuId', 'menuName', 'menuIcon', 'menuType', 'sortOrder'];
-  const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+  const requiredHeaders = [
+    "menuId",
+    "menuName",
+    "menuIcon",
+    "menuType",
+    "sortOrder",
+  ];
+  const missingHeaders = requiredHeaders.filter(
+    (header) => !headers.includes(header),
+  );
 
   if (missingHeaders.length > 0) {
     return {
       success: false,
-      error: `缺少必填字段: ${missingHeaders.join(', ')}`
+      error: `缺少必填字段: ${missingHeaders.join(", ")}`,
     };
   }
 
@@ -377,7 +430,7 @@ function processMenuData(rawData: string[][]): TableImportResult<MenuTableRow> {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!row || row.every(cell => !cell || cell.toString().trim() === '')) {
+    if (!row || row.every((cell) => !cell || cell.toString().trim() === "")) {
       continue; // 跳过空行
     }
 
@@ -386,18 +439,18 @@ function processMenuData(rawData: string[][]): TableImportResult<MenuTableRow> {
     headers.forEach((header, index) => {
       const value = row[index]?.toString().trim();
       if (value) {
-        if (header === 'sortOrder') {
+        if (header === "sortOrder") {
           const sortOrder = parseInt(value);
           if (isNaN(sortOrder)) {
             errors.push(`第${i + 2}行: sortOrder必须是数字`);
           } else {
             menuRow[header] = sortOrder;
           }
-        } else if (header === 'menuType') {
-          if (!['single', 'tabs'].includes(value)) {
+        } else if (header === "menuType") {
+          if (!["single", "tabs"].includes(value)) {
             errors.push(`第${i + 2}行: menuType必须是single或tabs`);
           } else {
-            menuRow[header] = value as 'single' | 'tabs';
+            menuRow[header] = value as "single" | "tabs";
           }
         } else {
           (menuRow as any)[header] = value;
@@ -419,7 +472,9 @@ function processMenuData(rawData: string[][]): TableImportResult<MenuTableRow> {
   // 检查父子关系
   menuData.forEach((row, index) => {
     if (row.parentMenuId) {
-      const parentExists = menuData.some(parent => parent.menuId === row.parentMenuId);
+      const parentExists = menuData.some(
+        (parent) => parent.menuId === row.parentMenuId,
+      );
       if (!parentExists) {
         errors.push(`第${index + 2}行: 父菜单 "${row.parentMenuId}" 不存在`);
       }
@@ -429,14 +484,14 @@ function processMenuData(rawData: string[][]): TableImportResult<MenuTableRow> {
   if (errors.length > 0) {
     return {
       success: false,
-      error: `数据验证失败:\n${errors.slice(0, 10).join('\n')}${errors.length > 10 ? '\n...' : ''}`
+      error: `数据验证失败:\n${errors.slice(0, 10).join("\n")}${errors.length > 10 ? "\n..." : ""}`,
     };
   }
 
   return {
     success: true,
     data: menuData,
-    rowCount: menuData.length
+    rowCount: menuData.length,
   };
 }
 
@@ -447,21 +502,23 @@ function processSiteData(rawData: string[][]): TableImportResult<SiteTableRow> {
   if (!rawData || rawData.length < 2) {
     return {
       success: false,
-      error: '文件内容为空或格式不正确'
+      error: "文件内容为空或格式不正确",
     };
   }
 
-  const headers = rawData[0].map(h => h?.toString().trim());
+  const headers = rawData[0].map((h) => h?.toString().trim());
   const rows = rawData.slice(1);
 
   // 验证网站表头
-  const requiredHeaders = ['menuId', 'title', 'description'];
-  const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+  const requiredHeaders = ["menuId", "title", "description"];
+  const missingHeaders = requiredHeaders.filter(
+    (header) => !headers.includes(header),
+  );
 
   if (missingHeaders.length > 0) {
     return {
       success: false,
-      error: `缺少必填字段: ${missingHeaders.join(', ')}`
+      error: `缺少必填字段: ${missingHeaders.join(", ")}`,
     };
   }
 
@@ -471,7 +528,7 @@ function processSiteData(rawData: string[][]): TableImportResult<SiteTableRow> {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!row || row.every(cell => !cell || cell.toString().trim() === '')) {
+    if (!row || row.every((cell) => !cell || cell.toString().trim() === "")) {
       continue; // 跳过空行
     }
 
@@ -480,7 +537,7 @@ function processSiteData(rawData: string[][]): TableImportResult<SiteTableRow> {
     headers.forEach((header, index) => {
       const value = row[index]?.toString().trim();
       if (value) {
-        if (header === 'sortOrder') {
+        if (header === "sortOrder") {
           const sortOrder = parseInt(value);
           if (isNaN(sortOrder)) {
             siteRow[header] = 0;
@@ -510,14 +567,14 @@ function processSiteData(rawData: string[][]): TableImportResult<SiteTableRow> {
   if (errors.length > 0) {
     return {
       success: false,
-      error: `数据验证失败:\n${errors.slice(0, 10).join('\n')}${errors.length > 10 ? '\n...' : ''}`
+      error: `数据验证失败:\n${errors.slice(0, 10).join("\n")}${errors.length > 10 ? "\n..." : ""}`,
     };
   }
 
   return {
     success: true,
     data: siteData,
-    rowCount: siteData.length
+    rowCount: siteData.length,
   };
 }
 
@@ -528,9 +585,8 @@ async function generateConfig(
   menuData: MenuTableRow[],
   siteData: SiteTableRow[],
   siteInfo: { title: string; description: string; logoText: string },
-  options: OptimizationOptions
+  options: OptimizationOptions,
 ): Promise<ConfigResult> {
-
   if (options.enabled) {
     // 生成优化版本
     const optimizedResult = splitConfig(menuData, siteData, siteInfo, options);
@@ -540,7 +596,7 @@ async function generateConfig(
     const config = generateTraditionalConfig(menuData, siteData, siteInfo);
     return {
       config,
-      optimization: { enabled: false }
+      optimization: { enabled: false },
     } as ConfigResult;
   }
 }
@@ -551,41 +607,42 @@ async function generateConfig(
 function generateTraditionalConfig(
   menuData: MenuTableRow[],
   siteData: SiteTableRow[],
-  siteInfo: { title: string; description: string; logoText: string }
+  siteInfo: { title: string; description: string; logoText: string },
 ): any {
   // 按sortOrder排序菜单
   const sortedMenus = [...menuData].sort((a, b) => a.sortOrder - b.sortOrder);
 
   // 分离顶级菜单和子菜单
-  const topMenus = sortedMenus.filter(menu => !menu.parentMenuId);
-  const subMenus = sortedMenus.filter(menu => menu.parentMenuId);
+  const topMenus = sortedMenus.filter((menu) => !menu.parentMenuId);
+  const subMenus = sortedMenus.filter((menu) => menu.parentMenuId);
 
   // 生成categoryMap
   const categoryMap: { [key: string]: string } = {};
-  topMenus.forEach(menu => {
+  topMenus.forEach((menu) => {
     categoryMap[menu.menuName] = menu.menuId;
   });
 
   // 生成menuItems
-  const menuItems = topMenus.map(topMenu => {
-    const children = subMenus.filter(sub => sub.parentMenuId === topMenu.menuId)
-                             .sort((a, b) => a.sortOrder - b.sortOrder);
+  const menuItems = topMenus.map((topMenu) => {
+    const children = subMenus
+      .filter((sub) => sub.parentMenuId === topMenu.menuId)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
 
     if (children.length > 0) {
       // 有子菜单的情况
-      const submenu = children.map(child => ({
+      const submenu = children.map((child) => ({
         name: child.menuName,
         href: `#${child.menuId}`,
         icon: child.menuIcon,
-        sites: generateSitesForMenu(child.menuId, siteData)
+        sites: generateSitesForMenu(child.menuId, siteData),
       }));
 
       return {
         name: topMenu.menuName,
         href: `#${topMenu.menuId}`,
         icon: topMenu.menuIcon,
-        type: 'tabs' as const,
-        submenu
+        type: "tabs" as const,
+        submenu,
       };
     } else {
       // 单级菜单的情况
@@ -593,8 +650,8 @@ function generateTraditionalConfig(
         name: topMenu.menuName,
         href: `#${topMenu.menuId}`,
         icon: topMenu.menuIcon,
-        type: 'single' as const,
-        sites: generateSitesForMenu(topMenu.menuId, siteData)
+        type: "single" as const,
+        sites: generateSitesForMenu(topMenu.menuId, siteData),
       };
     }
   });
@@ -605,11 +662,11 @@ function generateTraditionalConfig(
       description: siteInfo.description,
       logo: {
         text: siteInfo.logoText,
-        href: "/"
-      }
+        href: "/",
+      },
     },
     categoryMap,
-    menuItems
+    menuItems,
   };
 }
 
@@ -617,13 +674,14 @@ function generateTraditionalConfig(
  * 为指定菜单生成网站数据
  */
 function generateSitesForMenu(menuId: string, siteData: SiteTableRow[]) {
-  const menuSites = siteData.filter(site => site.menuId === menuId)
-                           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  const menuSites = siteData
+    .filter((site) => site.menuId === menuId)
+    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-  return menuSites.map(siteRow => {
+  return menuSites.map((siteRow) => {
     const site: any = {
       title: siteRow.title,
-      description: siteRow.description
+      description: siteRow.description,
     };
 
     // 可选字段
@@ -632,10 +690,16 @@ function generateSitesForMenu(menuId: string, siteData: SiteTableRow[]) {
 
     // 数组字段（分号分隔）
     if (siteRow.advantages) {
-      site.advantages = siteRow.advantages.split(';').map(s => s.trim()).filter(s => s);
+      site.advantages = siteRow.advantages
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s);
     }
     if (siteRow.features) {
-      site.features = siteRow.features.split(';').map(s => s.trim()).filter(s => s);
+      site.features = siteRow.features
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s);
     }
 
     // 详细信息
@@ -643,13 +707,22 @@ function generateSitesForMenu(menuId: string, siteData: SiteTableRow[]) {
     if (siteRow.intro) details.intro = siteRow.intro;
     if (siteRow.pricing) details.pricing = siteRow.pricing;
     if (siteRow.pros) {
-      details.pros = siteRow.pros.split(';').map(s => s.trim()).filter(s => s);
+      details.pros = siteRow.pros
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s);
     }
     if (siteRow.cons) {
-      details.cons = siteRow.cons.split(';').map(s => s.trim()).filter(s => s);
+      details.cons = siteRow.cons
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s);
     }
     if (siteRow.tips) {
-      details.tips = siteRow.tips.split(';').map(s => s.trim()).filter(s => s);
+      details.tips = siteRow.tips
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s);
     }
 
     if (Object.keys(details).length > 0) {
@@ -658,13 +731,19 @@ function generateSitesForMenu(menuId: string, siteData: SiteTableRow[]) {
 
     // 相关网站
     if (siteRow.relatedTitles && siteRow.relatedDescriptions) {
-      const titles = siteRow.relatedTitles.split(';').map(s => s.trim()).filter(s => s);
-      const descriptions = siteRow.relatedDescriptions.split(';').map(s => s.trim()).filter(s => s);
+      const titles = siteRow.relatedTitles
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s);
+      const descriptions = siteRow.relatedDescriptions
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s);
 
       if (titles.length === descriptions.length && titles.length > 0) {
         site.related = titles.map((title, index) => ({
           title,
-          description: descriptions[index]
+          description: descriptions[index],
         }));
       }
     }
@@ -678,7 +757,7 @@ function generateSitesForMenu(menuId: string, siteData: SiteTableRow[]) {
  */
 async function createOptimizedZip(result: ConfigResult): Promise<Blob> {
   if (result.optimization.enabled === false) {
-    throw new Error('不是优化版本的配置');
+    throw new Error("不是优化版本的配置");
   }
 
   // 类型断言为优化配置结果
@@ -687,21 +766,24 @@ async function createOptimizedZip(result: ConfigResult): Promise<Blob> {
   const zip = new JSZip();
 
   // 添加基础配置文件 (新格式)
-  zip.file('config.json', JSON.stringify(optimizedResult.baseConfig, null, 2));
+  zip.file("config.json", JSON.stringify(optimizedResult.baseConfig, null, 2));
 
   // 添加分类文件
-  const categoriesFolder = zip.folder('categories');
+  const categoriesFolder = zip.folder("categories");
   if (categoriesFolder) {
-    optimizedResult.categoryFiles.forEach(file => {
-      categoriesFolder.file(file.filename, JSON.stringify(file.content, null, 2));
+    optimizedResult.categoryFiles.forEach((file) => {
+      categoriesFolder.file(
+        file.filename,
+        JSON.stringify(file.content, null, 2),
+      );
     });
   }
 
   // 添加说明文档
   const readme = generateReadme(result);
-  zip.file('README.md', readme);
+  zip.file("README.md", readme);
 
-  return await zip.generateAsync({ type: 'blob' });
+  return await zip.generateAsync({ type: "blob" });
 }
 
 /**
@@ -709,7 +791,7 @@ async function createOptimizedZip(result: ConfigResult): Promise<Blob> {
  */
 function generateReadme(result: ConfigResult): string {
   if (result.optimization.enabled === false) {
-    return '# 传统配置文件\n\n直接将 config.json 放到项目的 src/data/ 目录下即可。';
+    return "# 传统配置文件\n\n直接将 config.json 放到项目的 src/data/ 目录下即可。";
   }
 
   // 类型断言为优化配置结果
@@ -775,5 +857,3 @@ public/
 - 根据用户行为调整预加载策略
 `;
 }
-
-
