@@ -1,0 +1,6 @@
+menuId,menuName,menuIcon,menuType,parentMenuId,sortOrder
+tools,开发工具,mdi:tools,single,,1
+design,设计资源,mdi:palette,tabs,,2
+design-ui,UI设计,mdi:monitor,single,design,1
+design-icon,图标资源,mdi:star,single,design,2
+marketing,营销工具,mdi:bullhorn,single,,3
