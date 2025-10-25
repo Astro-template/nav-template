@@ -1,8 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ConfigurableSidebar from '../components/ConfigurableSidebar.astro';
-import ConfigurableNavCard from '../components/ConfigurableNavCard.astro';
-import { getConfig, getMenuItems, getSiteInfo } from '../utils/config';
+import Layout from "../../../layouts/Layout.astro";
+import ConfigurableSidebar from "../../../components/ConfigurableSidebar.astro";
+import ConfigurableNavCard from "../../../components/ConfigurableNavCard.astro";
+import { getConfig, getMenuItems, getSiteInfo } from "../../../utils/config";
 
 // 获取配置数据
 const config = getConfig();
@@ -10,192 +10,199 @@ const siteInfo = getSiteInfo();
 const menuItems = getMenuItems();
 ---
 
-<Layout 
-  title={siteInfo.title + " - 配置化演示"}
-  description={siteInfo.description}
+<Layout
+    title={siteInfo.title + " - 配置化演示"}
+    description={siteInfo.description}
 >
-  <div class="layout">
-    <ConfigurableSidebar />
-    <main>
-      <div class="top-nav">
-        <div class="nav-links">
-          <a href="/" class="nav-link">原版首页</a>
-          <a href="/config-demo" class="nav-link active">配置化演示</a>
-          <a href="/submit" class="nav-link">提交收录</a>
-        </div>
-      </div>
-      
-      <div class="search-box">
-        <input 
-          type="text" 
-          placeholder="搜索导航内容..." 
-          class="search-input"
-        />
-      </div>
-      
-      <div class="config-info">
-        <h3>🎯 配置化重构说明</h3>
-        <div class="info-grid">
-          <div class="info-card">
-            <h4>📁 配置文件</h4>
-            <p>所有导航数据现在存储在 <code>src/data/config.json</code> 中</p>
-          </div>
-          <div class="info-card">
-            <h4>🔧 类型安全</h4>
-            <p>使用 TypeScript 类型定义确保数据结构正确</p>
-          </div>
-          <div class="info-card">
-            <h4>🚀 易于定制</h4>
-            <p>用户只需修改配置文件即可定制自己的导航网站</p>
-          </div>
-          <div class="info-card">
-            <h4>🔄 向后兼容</h4>
-            <p>提供数据转换工具，保持与现有组件的兼容性</p>
-          </div>
-        </div>
-      </div>
-      
-      {menuItems.map((menuItem, index) => (
-        <ConfigurableNavCard menuItem={menuItem} index={index} />
-      ))}
-    </main>
-  </div>
+    <div class="layout">
+        <ConfigurableSidebar />
+        <main>
+            <div class="top-nav">
+                <div class="nav-links">
+                    <a href="/" class="nav-link">原版首页</a>
+                    <a href="/config-demo" class="nav-link active">配置化演示</a
+                    >
+                    <a href="/submit" class="nav-link">提交收录</a>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <input
+                    type="text"
+                    placeholder="搜索导航内容..."
+                    class="search-input"
+                />
+            </div>
+
+            <div class="config-info">
+                <h3>🎯 配置化重构说明</h3>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4>📁 配置文件</h4>
+                        <p>
+                            所有导航数据现在存储在 <code
+                                >src/data/config.json</code
+                            > 中
+                        </p>
+                    </div>
+                    <div class="info-card">
+                        <h4>🔧 类型安全</h4>
+                        <p>使用 TypeScript 类型定义确保数据结构正确</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>🚀 易于定制</h4>
+                        <p>用户只需修改配置文件即可定制自己的导航网站</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>🔄 向后兼容</h4>
+                        <p>提供数据转换工具，保持与现有组件的兼容性</p>
+                    </div>
+                </div>
+            </div>
+
+            {
+                menuItems.map((menuItem, index) => (
+                    <ConfigurableNavCard menuItem={menuItem} index={index} />
+                ))
+            }
+        </main>
+    </div>
 </Layout>
 
 <style>
-  .layout {
-    display: flex;
-    min-height: 100vh;
-  }
+    .layout {
+        display: flex;
+        min-height: 100vh;
+    }
 
-  main {
-    flex: 1;
-    margin-left: 200px;
-    padding: 2rem 0.5rem 2rem 1rem;
-  }
-
-  .top-nav {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 200px;
-    height: 60px;
-    background: white;
-    border-bottom: 1px solid #eaeaea;
-    z-index: 100;
-    padding: 0 1rem 0 1rem;
-    display: flex;
-    align-items: center;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .nav-link {
-    color: #666;
-    text-decoration: none;
-    font-size: 0.95rem;
-    padding: 0.5rem 0;
-    transition: color 0.3s ease;
-    position: relative;
-  }
-
-  .nav-link:hover,
-  .nav-link.active {
-    color: #2937f0;
-  }
-
-  .nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: #2937f0;
-    border-radius: 2px;
-  }
-
-  .search-box {
-    margin: 5rem 0 2rem 0;
-    max-width: 600px;
-    text-align: left;
-  }
-
-  .search-input {
-    width: 100%;
-    padding: 1rem 1.5rem;
-    border: 2px solid #eaeaea;
-    border-radius: 8px;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.3s ease;
-  }
-
-  .search-input:focus {
-    border-color: #2937f0;
-  }
-
-  .config-info {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    margin-bottom: 2rem;
-  }
-
-  .config-info h3 {
-    margin: 0 0 1.5rem 0;
-    font-size: 1.5rem;
-  }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-  }
-
-  .info-card {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 1.5rem;
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-  }
-
-  .info-card h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
-  }
-
-  .info-card p {
-    margin: 0;
-    font-size: 0.9rem;
-    opacity: 0.9;
-    line-height: 1.5;
-  }
-
-  .info-card code {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-  }
-
-  @media (max-width: 768px) {
     main {
-      margin-left: 0;
-      max-width: 100%;
+        flex: 1;
+        margin-left: 200px;
+        padding: 2rem 0.5rem 2rem 1rem;
     }
 
     .top-nav {
-      left: 0;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 200px;
+        height: 60px;
+        background: white;
+        border-bottom: 1px solid #eaeaea;
+        z-index: 100;
+        padding: 0 1rem 0 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .nav-link {
+        color: #666;
+        text-decoration: none;
+        font-size: 0.95rem;
+        padding: 0.5rem 0;
+        transition: color 0.3s ease;
+        position: relative;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        color: #2937f0;
+    }
+
+    .nav-link.active::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #2937f0;
+        border-radius: 2px;
+    }
+
+    .search-box {
+        margin: 5rem 0 2rem 0;
+        max-width: 600px;
+        text-align: left;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border: 2px solid #eaeaea;
+        border-radius: 8px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-input:focus {
+        border-color: #2937f0;
+    }
+
+    .config-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .config-info h3 {
+        margin: 0 0 1.5rem 0;
+        font-size: 1.5rem;
     }
 
     .info-grid {
-      grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
     }
-  }
+
+    .info-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 8px;
+        backdrop-filter: blur(10px);
+    }
+
+    .info-card h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .info-card p {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+
+    .info-card code {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: "Courier New", monospace;
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+        main {
+            margin-left: 0;
+            max-width: 100%;
+        }
+
+        .top-nav {
+            left: 0;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
