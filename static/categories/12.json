@@ -7,7 +7,13 @@
       "description": "SMTP服务商，transaction email 首选",
       "url": "https://mailgun.com",
       "logo": "",
-      "advantages": [],
+      "advantages": [
+        "可靠的邮件发送服务",
+        "详细的数据分析",
+        "API支持",
+        "邮件验证功能",
+        "自动化工具"
+      ],
       "features": [],
       "details": {
         "intro": "",
@@ -23,7 +29,13 @@
       "description": "纯SMTP服务商，价格实惠",
       "url": "https://sendgrid.com",
       "logo": "",
-      "advantages": [],
+      "advantages": [
+        "高度可扩展",
+        "强大的API",
+        "详细的分析报告",
+        "模板系统",
+        "自动化营销"
+      ],
       "features": [],
       "details": {
         "intro": "",
@@ -39,7 +51,13 @@
       "description": "全平台的邮件营销平台",
       "url": "https://mailchimp.com",
       "logo": "",
-      "advantages": [],
+      "advantages": [
+        "全面的营销工具",
+        "智能分析",
+        "自动化工作流",
+        "受众细分",
+        "A/B测试"
+      ],
       "features": [],
       "details": {
         "intro": "",
