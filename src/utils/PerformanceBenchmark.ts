@@ -15,10 +15,10 @@ export interface BenchmarkResult {
 }
 
 export interface PerformanceThresholds {
-  configLoad: number;      // 配置加载阈值 (ms)
-  categoryLoad: number;    // 分类加载阈值 (ms)
-  cacheHit: number;        // 缓存命中阈值 (ms)
-  memoryUsage: number;     // 内存使用阈值 (MB)
+  configLoad: number; // 配置加载阈值 (ms)
+  categoryLoad: number; // 分类加载阈值 (ms)
+  cacheHit: number; // 缓存命中阈值 (ms)
+  memoryUsage: number; // 内存使用阈值 (MB)
 }
 
 export class PerformanceBenchmark {
@@ -27,11 +27,11 @@ export class PerformanceBenchmark {
 
   constructor(thresholds?: Partial<PerformanceThresholds>) {
     this.thresholds = {
-      configLoad: 1000,     // 1秒
-      categoryLoad: 2000,   // 2秒
-      cacheHit: 10,         // 10ms
-      memoryUsage: 50,      // 50MB
-      ...thresholds
+      configLoad: 1000, // 1秒
+      categoryLoad: 2000, // 2秒
+      cacheHit: 10, // 10ms
+      memoryUsage: 50, // 50MB
+      ...thresholds,
     };
   }
 
@@ -41,12 +41,12 @@ export class PerformanceBenchmark {
   async runBenchmark<T>(
     name: string,
     testFn: () => Promise<T>,
-    iterations: number = 1
+    iterations: number = 1,
   ): Promise<BenchmarkResult> {
     console.log(`🔄 开始性能基准测试: ${name} (${iterations}次迭代)`);
 
     const times: number[] = [];
-    let lastResult: T;
+    let lastResult: T | undefined;
     let success = true;
 
     for (let i = 0; i < iterations; i++) {
@@ -67,13 +67,16 @@ export class PerformanceBenchmark {
       duration: times.reduce((sum, time) => sum + time, 0),
       success,
       iterations: times.length,
-      avgTime: times.length > 0 ? times.reduce((sum, time) => sum + time, 0) / times.length : 0,
+      avgTime:
+        times.length > 0
+          ? times.reduce((sum, time) => sum + time, 0) / times.length
+          : 0,
       minTime: times.length > 0 ? Math.min(...times) : 0,
       maxTime: times.length > 0 ? Math.max(...times) : 0,
       metadata: {
         times,
-        lastResult: success ? lastResult : null
-      }
+        lastResult: success && lastResult !== undefined ? lastResult : null,
+      },
     };
 
     this.results.push(result);
@@ -82,7 +85,7 @@ export class PerformanceBenchmark {
       avgTime: `${result.avgTime.toFixed(2)}ms`,
       minTime: `${result.minTime.toFixed(2)}ms`,
       maxTime: `${result.maxTime.toFixed(2)}ms`,
-      success
+      success,
     });
 
     return result;
@@ -96,7 +99,7 @@ export class PerformanceBenchmark {
       name: string;
       testFn: () => Promise<any>;
       iterations?: number;
-    }>
+    }>,
   ): Promise<BenchmarkResult[]> {
     console.log(`🚀 开始批量基准测试 (${tests.length}个测试)`);
 
@@ -106,15 +109,16 @@ export class PerformanceBenchmark {
       const result = await this.runBenchmark(
         test.name,
         test.testFn,
-        test.iterations || 1
+        test.iterations || 1,
       );
       results.push(result);
     }
 
     console.log(`🎉 批量基准测试完成`, {
       totalTests: tests.length,
-      successfulTests: results.filter(r => r.success).length,
-      totalTime: results.reduce((sum, r) => sum + r.duration, 0).toFixed(2) + 'ms'
+      successfulTests: results.filter((r) => r.success).length,
+      totalTime:
+        results.reduce((sum, r) => sum + r.duration, 0).toFixed(2) + "ms",
     });
 
     return results;
@@ -132,22 +136,33 @@ export class PerformanceBenchmark {
       passed: boolean;
     }>;
   } {
-    const validationResults = [];
+    const validationResults: Array<{
+      name: string;
+      threshold: number;
+      actual: number;
+      passed: boolean;
+    }> = [];
 
     for (const result of this.results) {
       let threshold: number;
       let thresholdName: string;
 
       // 根据测试名称确定阈值
-      if (result.name.includes('配置') || result.name.includes('config')) {
+      if (result.name.includes("配置") || result.name.includes("config")) {
         threshold = this.thresholds.configLoad;
-        thresholdName = 'configLoad';
-      } else if (result.name.includes('分类') || result.name.includes('category')) {
+        thresholdName = "configLoad";
+      } else if (
+        result.name.includes("分类") ||
+        result.name.includes("category")
+      ) {
         threshold = this.thresholds.categoryLoad;
-        thresholdName = 'categoryLoad';
-      } else if (result.name.includes('缓存') || result.name.includes('cache')) {
+        thresholdName = "categoryLoad";
+      } else if (
+        result.name.includes("缓存") ||
+        result.name.includes("cache")
+      ) {
         threshold = this.thresholds.cacheHit;
-        thresholdName = 'cacheHit';
+        thresholdName = "cacheHit";
       } else {
         continue; // 跳过无法分类的测试
       }
@@ -157,15 +172,15 @@ export class PerformanceBenchmark {
         name: result.name,
         threshold,
         actual: result.avgTime,
-        passed
+        passed,
       });
     }
 
-    const allPassed = validationResults.every(r => r.passed);
+    const allPassed = validationResults.every((r) => r.passed);
 
     return {
       passed: allPassed,
-      results: validationResults
+      results: validationResults,
     };
   }
 
@@ -184,7 +199,7 @@ export class PerformanceBenchmark {
     recommendations: string[];
   } {
     const totalTests = this.results.length;
-    const successfulTests = this.results.filter(r => r.success).length;
+    const successfulTests = this.results.filter((r) => r.success).length;
     const totalTime = this.results.reduce((sum, r) => sum + r.duration, 0);
     const avgTime = totalTests > 0 ? totalTime / totalTests : 0;
 
@@ -195,22 +210,22 @@ export class PerformanceBenchmark {
 
     for (const validation of thresholdValidation.results) {
       if (!validation.passed) {
-        if (validation.name.includes('配置')) {
-          recommendations.push('考虑优化配置文件大小或使用更高效的解析方法');
-        } else if (validation.name.includes('分类')) {
-          recommendations.push('考虑实现更积极的预加载策略或优化数据结构');
-        } else if (validation.name.includes('缓存')) {
-          recommendations.push('检查缓存实现，确保LRU算法效率');
+        if (validation.name.includes("配置")) {
+          recommendations.push("考虑优化配置文件大小或使用更高效的解析方法");
+        } else if (validation.name.includes("分类")) {
+          recommendations.push("考虑实现更积极的预加载策略或优化数据结构");
+        } else if (validation.name.includes("缓存")) {
+          recommendations.push("检查缓存实现，确保LRU算法效率");
         }
       }
     }
 
     if (successfulTests < totalTests) {
-      recommendations.push('修复失败的测试用例以提高系统稳定性');
+      recommendations.push("修复失败的测试用例以提高系统稳定性");
     }
 
     if (avgTime > 1000) {
-      recommendations.push('整体性能需要优化，考虑并行处理或异步优化');
+      recommendations.push("整体性能需要优化，考虑并行处理或异步优化");
     }
 
     return {
@@ -218,11 +233,11 @@ export class PerformanceBenchmark {
         totalTests,
         successfulTests,
         totalTime,
-        avgTime
+        avgTime,
       },
       thresholdValidation,
       results: this.results,
-      recommendations
+      recommendations,
     };
   }
 
@@ -235,7 +250,7 @@ export class PerformanceBenchmark {
     percentage: number;
     withinThreshold: boolean;
   } | null {
-    if (typeof performance !== 'undefined' && (performance as any).memory) {
+    if (typeof performance !== "undefined" && (performance as any).memory) {
       const memory = (performance as any).memory;
       const usedMB = memory.usedJSHeapSize / 1024 / 1024;
       const totalMB = memory.totalJSHeapSize / 1024 / 1024;
@@ -245,7 +260,7 @@ export class PerformanceBenchmark {
         used: usedMB,
         total: totalMB,
         percentage,
-        withinThreshold: usedMB <= this.thresholds.memoryUsage
+        withinThreshold: usedMB <= this.thresholds.memoryUsage,
       };
     }
 
@@ -279,7 +294,7 @@ export class PerformanceBenchmark {
    */
   static compareResults(
     baseline: BenchmarkResult[],
-    current: BenchmarkResult[]
+    current: BenchmarkResult[],
   ): Array<{
     name: string;
     baselineTime: number;
@@ -287,20 +302,29 @@ export class PerformanceBenchmark {
     improvement: number;
     improvementPercentage: number;
   }> {
-    const comparisons = [];
+    const comparisons: Array<{
+      name: string;
+      baselineTime: number;
+      currentTime: number;
+      improvement: number;
+      improvementPercentage: number;
+    }> = [];
 
     for (const currentResult of current) {
-      const baselineResult = baseline.find(b => b.name === currentResult.name);
+      const baselineResult = baseline.find(
+        (b) => b.name === currentResult.name,
+      );
       if (baselineResult) {
         const improvement = baselineResult.avgTime - currentResult.avgTime;
-        const improvementPercentage = (improvement / baselineResult.avgTime) * 100;
+        const improvementPercentage =
+          (improvement / baselineResult.avgTime) * 100;
 
         comparisons.push({
           name: currentResult.name,
           baselineTime: baselineResult.avgTime,
           currentTime: currentResult.avgTime,
           improvement,
-          improvementPercentage
+          improvementPercentage,
         });
       }
     }
@@ -320,7 +344,7 @@ export const defaultBenchmark = new PerformanceBenchmark();
 export async function quickBenchmark<T>(
   name: string,
   testFn: () => Promise<T>,
-  iterations: number = 1
+  iterations: number = 1,
 ): Promise<BenchmarkResult> {
   return defaultBenchmark.runBenchmark(name, testFn, iterations);
 }

@@ -623,7 +623,7 @@ const finalOperations = testCache.getOperations();
     ))}
   </div>
 
-  <script define:vars={{ testResults, finalStats, finalOperations }}>
+  <script is:inline define:vars={{ testResults, finalStats, finalOperations }}>
     console.log('💾 本地存储缓存测试页面已加载');
     console.log('📊 测试结果:', JSON.stringify(testResults, null, 2));
     console.log('📊 缓存统计:', JSON.stringify(finalStats, null, 2));

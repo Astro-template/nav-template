@@ -134,8 +134,7 @@ export const EXAMPLE_TABLE_DATA: TableRow[] = [
     relatedDescriptions: "业界成名较早的tracker之一;价格昂贵但功能强大",
   },
   {
-    category: "流量平台",
-    subcategory: "PoP流量",
+    menuId: "traffic-platforms-pop",
     title: "PropellerAds",
     description: "很多人都在用的平台",
     url: "https://propellerads.com",

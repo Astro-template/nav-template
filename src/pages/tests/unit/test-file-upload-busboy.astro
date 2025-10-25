@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../../layouts/Layout.astro';
 ---
 
 <Layout title="Busboy文件上传测试">
@@ -55,6 +55,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+        // @ts-nocheck
   const form = document.getElementById('fileForm') as HTMLFormElement;
   const result = document.getElementById('result') as HTMLElement;
   const resultContent = document.getElementById('resultContent') as HTMLElement;

@@ -770,7 +770,7 @@ const finalSystemState = {
     ))}
   </div>
 
-  <script define:vars={{ e2eTests, e2eStats, testsByCategory, finalSystemState }} is:inline>
+  <script is:inline define:vars={{ e2eTests, e2eStats, testsByCategory, finalSystemState }} is:inline>
     console.log('🎯 综合端到端测试页面已加载');
     console.log('📊 E2E测试结果:', JSON.stringify(e2eTests, null, 2));
     console.log('📊 E2E测试统计:', JSON.stringify(e2eStats, null, 2));

@@ -538,7 +538,7 @@ const finalHealth = errorHandler.getSystemHealth();
     ))}
   </div>
 
-  <script define:vars={{ testResults, finalStats, finalHealth }}>
+  <script is:inline define:vars={{ testResults, finalStats, finalHealth }}>
     console.log('🛡️ 错误处理测试页面已加载');
     console.log('📊 测试结果:', JSON.stringify(testResults, null, 2));
     console.log('📊 错误统计:', JSON.stringify(finalStats, null, 2));

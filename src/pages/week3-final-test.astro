@@ -793,7 +793,7 @@ const kpiScore = Object.values(kpiResults).filter(Boolean).length / Object.keys(
     ))}
   </div>
 
-  <script define:vars={{ testSuites, kpiResults, kpiScore, overallStats }} is:inline>
+  <script is:inline define:vars={{ testSuites, kpiResults, kpiScore, overallStats }} is:inline>
     console.log('🎯 Week 3 最终集成测试页面已加载');
     console.log('📊 测试套件结果:', JSON.stringify(testSuites, null, 2));
     console.log('📊 KPI验证结果:', JSON.stringify(kpiResults, null, 2));

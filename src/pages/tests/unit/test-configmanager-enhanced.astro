@@ -403,7 +403,7 @@ const successRate = (successCount / totalTests * 100).toFixed(1);
     </button>
   </div>
 
-  <script define:vars={{ results }}>
+  <script is:inline define:vars={{ results }}>
     console.log('🧪 ConfigManager增强功能测试页面已加载');
     console.log('📊 测试结果:', JSON.stringify(results, null, 2));
   </script>

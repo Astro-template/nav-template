@@ -1,5 +1,5 @@
 {
-  "name": "nav-002",
+  "name": "astro-nav",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -14,7 +14,8 @@
     "copy-config": "node scripts/copy-config.js",
     "copy-config:watch": "node scripts/copy-config.js --watch",
     "check-deps": "node scripts/check-dependencies.cjs",
-    "check": "pnpm astro check && pnpm run check-deps"
+    "check": "pnpm astro check && pnpm run check-deps",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

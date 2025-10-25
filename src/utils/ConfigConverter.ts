@@ -304,7 +304,7 @@ export class ConfigConverter {
 ${categoryFiles
   .map(
     (file) =>
-      `- ${file.filename}: ${file.content.siteCount} 个网站, ${file.content.metadata.fileSizeKB}KB`,
+      `- ${file.filename}: ${file.content.metadata.siteCount} 个网站, ${file.content.metadata.fileSizeKB}KB`,
   )
   .join("\n")}
 

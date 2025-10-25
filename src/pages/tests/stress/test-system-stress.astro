@@ -515,7 +515,7 @@ const systemHealth = {
     ))}
   </div>
 
-  <script define:vars={{ stressTests, stressStats, systemHealth }} is:inline>
+  <script is:inline define:vars={{ stressTests, stressStats, systemHealth }} is:inline>
     console.log('🔥 系统压力测试页面已加载');
     console.log('📊 压力测试结果:', JSON.stringify(stressTests, null, 2));
     console.log('📊 压力测试统计:', JSON.stringify(stressStats, null, 2));

@@ -3,7 +3,7 @@
  * Week 2: 基于设计文档重构的配置管理系统
  */
 
-import type { SiteConfig } from '../types/config';
+import type { SiteConfig } from "../types/config";
 import type {
   OptimizedConfig,
   UnifiedConfig,
@@ -14,29 +14,29 @@ import type {
   ConfigFormat,
   LoadingState,
   CategoryData,
-  CategoryLoadResult
-} from '../types/lazyLoading';
-import { defaultErrorHandler, ErrorType } from './ErrorHandler';
+  CategoryLoadResult,
+} from "../types/lazyLoading";
+import { defaultErrorHandler, ErrorType } from "./ErrorHandler";
 
 /**
  * 配置管理器 - 核心配置管理类
  */
 export class ConfigManager {
   private static instance: ConfigManager;
-  
+
   // 核心状态
   private currentConfig: UnifiedConfig | null = null;
-  private configFormat: ConfigFormat = 'unknown';
-  private loadingState: LoadingState = 'idle';
+  private configFormat: ConfigFormat = "unknown";
+  private loadingState: LoadingState = "idle";
   private configPath: string;
 
   // Week 3 新增: 错误处理配置
   private retryConfig = {
     maxRetries: 3,
     retryDelay: 1000,
-    timeout: 10000
+    timeout: 10000,
   };
-  
+
   // 性能监控
   private loadStartTime: number = 0;
   private loadMetrics: {
@@ -46,7 +46,7 @@ export class ConfigManager {
   } = {
     configLoadTime: 0,
     detectionTime: 0,
-    conversionTime: 0
+    conversionTime: 0,
   };
 
   constructor(configPath?: string) {
@@ -60,20 +60,26 @@ export class ConfigManager {
   private detectConfigPath(): string {
     // 开发和生产环境都使用相同路径
     // static/ 文件夹在开发时存在，构建后会复制到 dist/
-    return '/config.json';  // 对应 static/config.json
+    return "/config.json"; // 对应 static/config.json
   }
 
   /**
    * 带重试机制的fetch请求
    */
-  private async fetchWithRetry(url: string, retries: number = this.retryConfig.maxRetries): Promise<Response> {
+  private async fetchWithRetry(
+    url: string,
+    retries: number = this.retryConfig.maxRetries,
+  ): Promise<Response> {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.retryConfig.timeout);
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          this.retryConfig.timeout,
+        );
 
         const response = await fetch(url, {
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -90,15 +96,18 @@ export class ConfigManager {
           throw error;
         }
 
-        console.warn(`🔄 ConfigManager: 请求失败，重试 ${attempt + 1}/${retries}`, error);
+        console.warn(
+          `🔄 ConfigManager: 请求失败，重试 ${attempt + 1}/${retries}`,
+          error,
+        );
 
         // 指数退避延迟
         const delay = this.retryConfig.retryDelay * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
-    throw new Error('重试次数已达上限');
+    throw new Error("重试次数已达上限");
   }
 
   /**
@@ -116,7 +125,7 @@ export class ConfigManager {
    */
   detectConfigFormat(config: any): ConfigDetectionResult {
     const startTime = performance.now();
-    
+
     let confidence = 0;
     let isOptimized = false;
     let hasOptimizationField = false;
@@ -125,7 +134,7 @@ export class ConfigManager {
     let estimatedCategories = 0;
 
     // 1. 检查optimization字段 (权重: 40%)
-    if (config.optimization && typeof config.optimization === 'object') {
+    if (config.optimization && typeof config.optimization === "object") {
       hasOptimizationField = true;
       if (config.optimization.enabled === true) {
         confidence += 0.4;
@@ -135,53 +144,72 @@ export class ConfigManager {
 
     // 2. 检查categoryIndex字段 (权重: 40%)
     if (config.menuItems && Array.isArray(config.menuItems)) {
-      const itemsWithCategoryIndex = config.menuItems.filter((item: any) => 
-        typeof item.categoryIndex === 'number' && item.categoryIndex >= 0
+      const itemsWithCategoryIndex = config.menuItems.filter(
+        (item: any) =>
+          typeof item.categoryIndex === "number" && item.categoryIndex >= 0,
       );
-      
+
       if (itemsWithCategoryIndex.length > 0) {
         hasCategoryIndexes = true;
         confidence += 0.4;
         isOptimized = true;
-        
+
         // 计算分类数量 (包括submenu)
         const allIndexes: number[] = [];
         config.menuItems.forEach((item: any) => {
-          if (typeof item.categoryIndex === 'number' && item.categoryIndex >= 0) {
+          if (
+            typeof item.categoryIndex === "number" &&
+            item.categoryIndex >= 0
+          ) {
             allIndexes.push(item.categoryIndex);
           }
           if (item.submenu && Array.isArray(item.submenu)) {
             item.submenu.forEach((sub: any) => {
-              if (typeof sub.categoryIndex === 'number' && sub.categoryIndex >= 0) {
+              if (
+                typeof sub.categoryIndex === "number" &&
+                sub.categoryIndex >= 0
+              ) {
                 allIndexes.push(sub.categoryIndex);
               }
             });
           }
         });
-        estimatedCategories = allIndexes.length > 0 ? Math.max(...allIndexes) + 1 : 0;
+        estimatedCategories =
+          allIndexes.length > 0 ? Math.max(...allIndexes) + 1 : 0;
       }
     }
 
     // 3. 检查previewSites字段 (权重: 20%)
-    if (config.menuItems && config.menuItems.some((item: any) => 
-      Array.isArray(item.previewSites) || 
-      (item.submenu && item.submenu.some((sub: any) => Array.isArray(sub.previewSites)))
-    )) {
+    if (
+      config.menuItems &&
+      config.menuItems.some(
+        (item: any) =>
+          Array.isArray(item.previewSites) ||
+          (item.submenu &&
+            item.submenu.some((sub: any) => Array.isArray(sub.previewSites))),
+      )
+    ) {
       hasPreviewSites = true;
       confidence += 0.2;
       isOptimized = true;
     }
 
     // 4. 检查传统格式特征
-    if (!isOptimized && config.menuItems && config.menuItems.some((item: any) => 
-      Array.isArray(item.sites) || 
-      (item.submenu && item.submenu.some((sub: any) => Array.isArray(sub.sites)))
-    )) {
+    if (
+      !isOptimized &&
+      config.menuItems &&
+      config.menuItems.some(
+        (item: any) =>
+          Array.isArray(item.sites) ||
+          (item.submenu &&
+            item.submenu.some((sub: any) => Array.isArray(sub.sites))),
+      )
+    ) {
       confidence = 0.95; // 传统配置的高置信度
     }
 
     // 5. 检查categoryMap字段 (传统格式特征)
-    if (config.categoryMap && typeof config.categoryMap === 'object') {
+    if (config.categoryMap && typeof config.categoryMap === "object") {
       if (!isOptimized) {
         confidence += 0.05; // 增强传统格式置信度
       }
@@ -196,12 +224,12 @@ export class ConfigManager {
       hasCategoryIndexes,
       hasPreviewSites,
       estimatedCategories,
-      confidence
+      confidence,
     };
 
-    console.log('🔍 配置格式检测:', {
+    console.log("🔍 配置格式检测:", {
       ...result,
-      detectionTime: `${detectionTime.toFixed(2)}ms`
+      detectionTime: `${detectionTime.toFixed(2)}ms`,
     });
 
     return result;
@@ -212,73 +240,72 @@ export class ConfigManager {
    */
   async loadConfig(): Promise<ConfigLoadResult> {
     this.loadStartTime = performance.now();
-    this.loadingState = 'loading';
+    this.loadingState = "loading";
 
     try {
-      console.log('🔄 ConfigManager: 开始加载配置文件...');
+      console.log("🔄 ConfigManager: 开始加载配置文件...");
 
       // 1. 加载主配置文件 (带错误处理)
       const response = await this.fetchWithRetry(this.configPath);
 
       const rawConfig = await response.json();
       this.loadMetrics.configLoadTime = performance.now() - this.loadStartTime;
-      
+
       // 2. 检测配置格式
       const detection = this.detectConfigFormat(rawConfig);
-      this.configFormat = detection.isOptimized ? 'optimized' : 'traditional';
-      
+      this.configFormat = detection.isOptimized ? "optimized" : "traditional";
+
       // 3. 转换为统一格式
       const conversionStartTime = performance.now();
-      const unifiedConfig = detection.isOptimized 
+      const unifiedConfig = detection.isOptimized
         ? this.convertOptimizedConfig(rawConfig as OptimizedConfig)
         : this.convertTraditionalConfig(rawConfig as SiteConfig);
-      
+
       this.loadMetrics.conversionTime = performance.now() - conversionStartTime;
       this.currentConfig = unifiedConfig;
-      this.loadingState = 'success';
-      
+      this.loadingState = "success";
+
       const totalLoadTime = performance.now() - this.loadStartTime;
-      
-      console.log('✅ ConfigManager: 配置加载成功', {
+
+      console.log("✅ ConfigManager: 配置加载成功", {
         format: this.configFormat,
         loadTime: `${totalLoadTime.toFixed(2)}ms`,
         menuItems: unifiedConfig.menuItems.length,
         totalSites: this.getTotalSiteCount(unifiedConfig),
-        metrics: this.loadMetrics
+        metrics: this.loadMetrics,
       });
-      
+
       return {
         success: true,
         config: unifiedConfig,
         isOptimized: detection.isOptimized,
         loadTime: totalLoadTime,
-        detection
+        detection,
       };
-      
     } catch (error) {
-      this.loadingState = 'error';
+      this.loadingState = "error";
       const totalLoadTime = performance.now() - this.loadStartTime;
 
       // 使用错误处理器处理错误
       const errorResult = await defaultErrorHandler.handleError(error, {
-        type: 'config',
-        operation: 'loadConfig',
-        path: this.configPath
+        type: "config",
+        operation: "loadConfig",
+        path: this.configPath,
       });
 
-      const errorMessage = errorResult.error?.userMessage || '配置加载失败';
+      const errorMessage = errorResult.error?.userMessage || "配置加载失败";
 
-      console.error('❌ ConfigManager: 配置加载失败', {
+      console.error("❌ ConfigManager: 配置加载失败", {
         error: errorMessage,
         loadTime: `${totalLoadTime.toFixed(2)}ms`,
-        errorType: errorResult.error?.type
+        errorType: errorResult.error?.type,
       });
 
       return {
         success: false,
         error: errorMessage,
         isOptimized: false,
-        loadTime: totalLoadTime
+        loadTime: totalLoadTime,
       };
     }
   }
@@ -287,27 +314,31 @@ export class ConfigManager {
    * 转换传统配置为统一格式
    */
   private convertTraditionalConfig(config: SiteConfig): UnifiedConfig {
-    const unifiedMenuItems: UnifiedMenuItem[] = config.menuItems.map(item => ({
-      name: item.name,
-      href: item.href,
-      icon: item.icon,
-      type: item.type,
-      sites: item.sites,
-      submenu: item.submenu?.map(sub => ({
-        name: sub.name,
-        href: sub.href,
-        icon: sub.icon,
-        sites: sub.sites,
-        isLazyLoaded: false
-      } as UnifiedSubMenuItem)),
-      isLazyLoaded: false
-    }));
+    const unifiedMenuItems: UnifiedMenuItem[] = config.menuItems.map(
+      (item) => ({
+        name: item.name,
+        href: item.href,
+        icon: item.icon,
+        type: item.type,
+        sites: item.sites,
+        submenu: item.submenu?.map(
+          (sub) =>
+            ({
+              name: sub.name,
+              href: sub.href,
+              icon: sub.icon,
+              sites: sub.sites,
+              isLazyLoaded: false,
+            }) as UnifiedSubMenuItem,
+        ),
+        isLazyLoaded: false,
+      }),
+    );
 
     return {
       site: config.site,
       menuItems: unifiedMenuItems,
       isOptimized: false,
-      categoryMap: config.categoryMap
     };
   }
 
@@ -315,31 +346,37 @@ export class ConfigManager {
    * 转换优化配置为统一格式
    */
   private convertOptimizedConfig(config: OptimizedConfig): UnifiedConfig {
-    const unifiedMenuItems: UnifiedMenuItem[] = config.menuItems.map(item => ({
-      name: item.name,
-      href: item.href,
-      icon: item.icon,
-      type: item.type,
-      categoryIndex: item.categoryIndex,
-      siteCount: item.siteCount,
-      previewSites: item.previewSites,
-      submenu: item.submenu?.map(sub => ({
-        name: sub.name,
-        href: sub.href,
-        icon: sub.icon,
-        categoryIndex: sub.categoryIndex,
-        siteCount: sub.siteCount,
-        previewSites: sub.previewSites,
-        isLazyLoaded: true
-      } as UnifiedSubMenuItem)),
-      isLazyLoaded: item.categoryIndex !== undefined && item.categoryIndex >= 0
-    }));
+    const unifiedMenuItems: UnifiedMenuItem[] = config.menuItems.map(
+      (item) => ({
+        name: item.name,
+        href: item.href,
+        icon: item.icon,
+        type: item.type,
+        categoryIndex: item.categoryIndex,
+        siteCount: item.siteCount,
+        previewSites: item.previewSites,
+        submenu: item.submenu?.map(
+          (sub) =>
+            ({
+              name: sub.name,
+              href: sub.href,
+              icon: sub.icon,
+              categoryIndex: sub.categoryIndex,
+              siteCount: sub.siteCount,
+              previewSites: sub.previewSites,
+              isLazyLoaded: true,
+            }) as UnifiedSubMenuItem,
+        ),
+        isLazyLoaded:
+          item.categoryIndex !== undefined && item.categoryIndex >= 0,
+      }),
+    );
 
     return {
       site: config.site,
       menuItems: unifiedMenuItems,
       isOptimized: true,
-      optimization: config.optimization
+      optimization: config.optimization,
     };
   }
 
@@ -350,22 +387,22 @@ export class ConfigManager {
     if (config.isOptimized && config.optimization) {
       return config.optimization.totalSites || 0;
     }
-    
+
     // 传统配置需要计算
     let total = 0;
-    config.menuItems.forEach(item => {
+    config.menuItems.forEach((item) => {
       if (item.sites) {
         total += item.sites.length;
       }
       if (item.submenu) {
-        item.submenu.forEach(sub => {
+        item.submenu.forEach((sub) => {
           if (sub.sites) {
             total += sub.sites.length;
           }
         });
       }
     });
-    
+
     return total;
   }
 
@@ -396,7 +433,7 @@ export class ConfigManager {
    * 检查是否为优化模式
    */
   isOptimizedMode(): boolean {
-    return this.configFormat === 'optimized';
+    return this.configFormat === "optimized";
   }
 
   /**
@@ -410,7 +447,14 @@ export class ConfigManager {
    * 检查配置是否已加载
    */
   isConfigLoaded(): boolean {
-    return this.currentConfig !== null && this.loadingState === 'success';
+    return this.currentConfig !== null && this.loadingState === "success";
+  }
+
+  /**
+   * 检查是否有配置（别名方法）
+   */
+  hasConfig(): boolean {
+    return this.isConfigLoaded();
   }
 
   /**
@@ -418,8 +462,8 @@ export class ConfigManager {
    */
   async reloadConfig(): Promise<ConfigLoadResult> {
     this.currentConfig = null;
-    this.configFormat = 'unknown';
-    this.loadingState = 'idle';
+    this.configFormat = "unknown";
+    this.loadingState = "idle";
     return this.loadConfig();
   }
 
@@ -438,8 +482,9 @@ export class ConfigManager {
       loadingState: this.loadingState,
       menuItemCount: config.menuItems.length,
       totalSites: this.getTotalSiteCount(config),
-      lazyLoadedItems: config.menuItems.filter(item => item.isLazyLoaded).length,
-      loadMetrics: this.loadMetrics
+      lazyLoadedItems: config.menuItems.filter((item) => item.isLazyLoaded)
+        .length,
+      loadMetrics: this.loadMetrics,
     };
 
     if (config.optimization) {
@@ -448,8 +493,8 @@ export class ConfigManager {
           totalCategories: config.optimization.totalCategories,
           previewCount: config.optimization.previewCount,
           fileSizeKB: config.optimization.fileSizeKB,
-          compressionRatio: config.optimization.compressionRatio
-        }
+          compressionRatio: config.optimization.compressionRatio,
+        },
       });
     }
 
@@ -462,7 +507,10 @@ export class ConfigManager {
   getPerformanceMetrics() {
     return {
       ...this.loadMetrics,
-      totalLoadTime: this.loadMetrics.configLoadTime + this.loadMetrics.detectionTime + this.loadMetrics.conversionTime
+      totalLoadTime:
+        this.loadMetrics.configLoadTime +
+        this.loadMetrics.detectionTime +
+        this.loadMetrics.conversionTime,
     };
   }
 
@@ -473,7 +521,7 @@ export class ConfigManager {
    * 专门用于处理优化格式的配置文件
    */
   async loadOptimizedConfig(): Promise<ConfigLoadResult> {
-    console.log('🚀 ConfigManager: 开始加载优化配置...');
+    console.log("🚀 ConfigManager: 开始加载优化配置...");
 
     // 首先尝试正常加载配置
     const result = await this.loadConfig();
@@ -484,17 +532,17 @@ export class ConfigManager {
 
     // 验证是否为优化配置
     if (!result.isOptimized) {
-      console.warn('⚠️ ConfigManager: 当前配置不是优化格式');
+      console.warn("⚠️ ConfigManager: 当前配置不是优化格式");
       return {
         ...result,
-        error: '当前配置不是优化格式，请使用 loadConfig() 方法'
+        error: "当前配置不是优化格式，请使用 loadConfig() 方法",
       };
     }
 
-    console.log('✅ ConfigManager: 优化配置加载成功', {
+    console.log("✅ ConfigManager: 优化配置加载成功", {
       totalCategories: this.currentConfig?.optimization?.totalCategories,
       totalSites: this.currentConfig?.optimization?.totalSites,
-      compressionRatio: this.currentConfig?.optimization?.compressionRatio
+      compressionRatio: this.currentConfig?.optimization?.compressionRatio,
     });
 
     return result;
@@ -512,11 +560,11 @@ export class ConfigManager {
 
       // 验证配置是否已加载且为优化模式
       if (!this.isConfigLoaded()) {
-        throw new Error('配置尚未加载，请先调用 loadConfig()');
+        throw new Error("配置尚未加载，请先调用 loadConfig()");
       }
 
       if (!this.isOptimizedMode()) {
-        throw new Error('当前配置不是优化模式，无需懒加载');
+        throw new Error("当前配置不是优化模式，无需懒加载");
       }
 
       // 验证分类索引有效性
@@ -535,41 +583,42 @@ export class ConfigManager {
 
       // 验证数据完整性
       if (!categoryData.sites || !Array.isArray(categoryData.sites)) {
-        throw new Error('分类数据格式错误: 缺少 sites 字段');
+        throw new Error("分类数据格式错误: 缺少 sites 字段");
       }
 
       if (categoryData.categoryIndex !== categoryIndex) {
-        console.warn(`⚠️ 分类索引不匹配: 期望 ${categoryIndex}, 实际 ${categoryData.categoryIndex}`);
+        console.warn(
+          `⚠️ 分类索引不匹配: 期望 ${categoryIndex}, 实际 ${categoryData.categoryIndex}`,
+        );
       }
 
       console.log(`✅ ConfigManager: 分类 ${categoryIndex} 数据加载成功`, {
         categoryName: categoryData.categoryName,
         siteCount: categoryData.sites.length,
         loadTime: `${loadTime.toFixed(2)}ms`,
-        fileSizeKB: categoryData.metadata?.fileSizeKB
+        fileSizeKB: categoryData.metadata?.fileSizeKB,
       });
 
       return {
         success: true,
         data: categoryData,
         fromCache: false,
-        loadTime
+        loadTime,
       };
-
     } catch (error) {
       const loadTime = performance.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      const errorMessage = error instanceof Error ? error.message : "未知错误";
 
       console.error(`❌ ConfigManager: 分类 ${categoryIndex} 数据加载失败`, {
         error: errorMessage,
-        loadTime: `${loadTime.toFixed(2)}ms`
+        loadTime: `${loadTime.toFixed(2)}ms`,
       });
 
       return {
         success: false,
         error: errorMessage,
         fromCache: false,
-        loadTime
+        loadTime,
       };
     }
   }
@@ -577,8 +626,12 @@ export class ConfigManager {
   /**
    * 批量加载多个分类数据 (Week 3 新增)
    */
-  async loadMultipleCategoryData(categoryIndexes: number[]): Promise<Map<number, CategoryLoadResult>> {
-    console.log(`🔄 ConfigManager: 开始批量加载 ${categoryIndexes.length} 个分类数据...`);
+  async loadMultipleCategoryData(
+    categoryIndexes: number[],
+  ): Promise<Map<number, CategoryLoadResult>> {
+    console.log(
+      `🔄 ConfigManager: 开始批量加载 ${categoryIndexes.length} 个分类数据...`,
+    );
 
     const results = new Map<number, CategoryLoadResult>();
     const promises = categoryIndexes.map(async (index) => {
@@ -589,11 +642,13 @@ export class ConfigManager {
 
     await Promise.all(promises);
 
-    const successCount = Array.from(results.values()).filter(r => r.success).length;
+    const successCount = Array.from(results.values()).filter(
+      (r) => r.success,
+    ).length;
     console.log(`✅ ConfigManager: 批量加载完成`, {
       total: categoryIndexes.length,
       success: successCount,
-      failed: categoryIndexes.length - successCount
+      failed: categoryIndexes.length - successCount,
     });
 
     return results;
@@ -603,7 +658,9 @@ export class ConfigManager {
    * 获取分类信息 (Week 3 新增)
    * 从主配置中获取指定分类的基本信息
    */
-  getCategoryInfo(categoryIndex: number): { name: string; siteCount: number; previewSites: any[] } | null {
+  getCategoryInfo(
+    categoryIndex: number,
+  ): { name: string; siteCount: number; previewSites: any[] } | null {
     if (!this.currentConfig || !this.isOptimizedMode()) {
       return null;
     }
@@ -614,7 +671,7 @@ export class ConfigManager {
         return {
           name: item.name,
           siteCount: item.siteCount || 0,
-          previewSites: item.previewSites || []
+          previewSites: item.previewSites || [],
         };
       }
 
@@ -625,7 +682,7 @@ export class ConfigManager {
             return {
               name: subItem.name,
               siteCount: subItem.siteCount || 0,
-              previewSites: subItem.previewSites || []
+              previewSites: subItem.previewSites || [],
             };
           }
         }
@@ -645,14 +702,17 @@ export class ConfigManager {
 
     const indexes: number[] = [];
 
-    this.currentConfig.menuItems.forEach(item => {
-      if (typeof item.categoryIndex === 'number' && item.categoryIndex >= 0) {
+    this.currentConfig.menuItems.forEach((item) => {
+      if (typeof item.categoryIndex === "number" && item.categoryIndex >= 0) {
         indexes.push(item.categoryIndex);
       }
 
       if (item.submenu) {
-        item.submenu.forEach(subItem => {
-          if (typeof subItem.categoryIndex === 'number' && subItem.categoryIndex >= 0) {
+        item.submenu.forEach((subItem) => {
+          if (
+            typeof subItem.categoryIndex === "number" &&
+            subItem.categoryIndex >= 0
+          ) {
             indexes.push(subItem.categoryIndex);
           }
         });
@@ -662,13 +722,11 @@ export class ConfigManager {
     return [...new Set(indexes)].sort((a, b) => a - b);
   }
 
-
-
   /**
    * 睡眠函数
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -676,7 +734,7 @@ export class ConfigManager {
    */
   updateRetryConfig(config: Partial<typeof this.retryConfig>): void {
     this.retryConfig = { ...this.retryConfig, ...config };
-    console.log('🔧 ConfigManager: 重试配置已更新', this.retryConfig);
+    console.log("🔧 ConfigManager: 重试配置已更新", this.retryConfig);
   }
 
   /**
@@ -695,8 +753,12 @@ export const defaultConfigManager = ConfigManager.getInstance();
 /**
  * 便捷函数：加载配置
  */
-export async function loadConfig(configPath?: string): Promise<ConfigLoadResult> {
-  const manager = configPath ? new ConfigManager(configPath) : defaultConfigManager;
+export async function loadConfig(
+  configPath?: string,
+): Promise<ConfigLoadResult> {
+  const manager = configPath
+    ? new ConfigManager(configPath)
+    : defaultConfigManager;
   return manager.loadConfig();
 }
 
@@ -724,7 +786,9 @@ export async function loadOptimizedConfig(): Promise<ConfigLoadResult> {
 /**
  * 便捷函数：加载分类数据 (Week 3 新增)
  */
-export async function loadCategoryData(categoryIndex: number): Promise<CategoryLoadResult> {
+export async function loadCategoryData(
+  categoryIndex: number,
+): Promise<CategoryLoadResult> {
   return defaultConfigManager.loadCategoryData(categoryIndex);
 }
 

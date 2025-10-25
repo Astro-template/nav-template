@@ -1,18 +1,21 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import QRCodeModal from '../components/QRCodeModal.astro';
+import Layout from "../../../layouts/Layout.astro";
+import QRCodeModal from "../../../components/QRCodeModal.astro";
 ---
 
 <Layout title="二维码测试页面">
-  <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
-    <h1>二维码功能测试</h1>
+    <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+        <h1>二维码功能测试</h1>
 
-    <div style="margin: 2rem 0;">
-      <h2>测试网站：Binom</h2>
-      <p>这是一个测试页面，用于验证二维码功能是否正常工作。</p>
+        <div style="margin: 2rem 0;">
+            <h2>测试网站：Binom</h2>
+            <p>这是一个测试页面，用于验证二维码功能是否正常工作。</p>
 
-      <div style="margin: 1rem 0;">
-        <button id="showQRCode" data-url="https://binom.org" style="
+            <div style="margin: 1rem 0;">
+                <button
+                    id="showQRCode"
+                    data-url="https://binom.org"
+                    style="
           padding: 0.8rem 2rem;
           background: #2937f0;
           color: white;
@@ -20,24 +23,26 @@ import QRCodeModal from '../components/QRCodeModal.astro';
           border-radius: 8px;
           cursor: pointer;
           font-size: 1rem;
-        ">
-          显示二维码
-        </button>
-      </div>
+        "
+                >
+                    显示二维码
+                </button>
+            </div>
 
-      <div id="qrResult" style="margin: 2rem 0; text-align: center;"></div>
+            <div id="qrResult" style="margin: 2rem 0; text-align: center;">
+            </div>
+        </div>
+
+        <div style="margin: 2rem 0;">
+            <h3>测试说明：</h3>
+            <ul>
+                <li>点击"显示二维码"按钮测试模态框功能</li>
+                <li>点击"直接生成二维码"按钮测试基础功能</li>
+                <li>二维码中间应该有 Binom 网站的 favicon 或者字母 "B"</li>
+                <li>扫描二维码应该能跳转到 https://binom.org</li>
+            </ul>
+        </div>
     </div>
 
-    <div style="margin: 2rem 0;">
-      <h3>测试说明：</h3>
-      <ul>
-        <li>点击"显示二维码"按钮测试模态框功能</li>
-        <li>点击"直接生成二维码"按钮测试基础功能</li>
-        <li>二维码中间应该有 Binom 网站的 favicon 或者字母 "B"</li>
-        <li>扫描二维码应该能跳转到 https://binom.org</li>
-      </ul>
-    </div>
-  </div>
-
-  <QRCodeModal title="Binom" url="https://binom.org" />
+    <QRCodeModal title="Binom" url="https://binom.org" />
 </Layout>

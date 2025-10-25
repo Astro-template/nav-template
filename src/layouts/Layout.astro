@@ -1,96 +1,98 @@
 ---
-import Header from '../components/Header.astro';
+import Header from "../components/Header.astro";
 
 interface Props {
-  title: string;
-  description?: string;
-  image?: string;
-  type?: string;
+    title: string;
+    description?: string;
+    image?: string;
+    type?: string;
 }
 
-const { 
-  title, 
-  description = "专业的Affiliate营销导航网站",
-  image = "/favicon.svg",
-  type = "website"
+const {
+    title,
+    description = "专业的Affiliate营销导航网站",
+    image = "/favicon.svg",
+    type = "website",
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    
-    <!-- 基本 SEO -->
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content={type} />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL(image, Astro.site)} />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonicalURL} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={new URL(image, Astro.site)} />
-    
-    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-  </head>
-  <body>
-    <Header />
-    <div class="content">
-      <slot />
-    </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
 
-    <!-- 懒加载脚本 -->
-    <script>
-      // 检查是否支持ES模块
-      if ('noModule' in HTMLScriptElement.prototype) {
-        // 现代浏览器，加载ES模块版本
-        import('/src/scripts/lazyLoader.ts').catch(error => {
-          console.warn('懒加载模块加载失败:', error);
-        });
-      } else {
-        // 旧浏览器降级处理
-        console.warn('浏览器不支持ES模块，懒加载功能可能受限');
-      }
-    </script>
-  </body>
+        <!-- 基本 SEO -->
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonicalURL} />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content={type} />
+        <meta property="og:url" content={canonicalURL} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={new URL(image, Astro.site)} />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={canonicalURL} />
+        <meta property="twitter:title" content={title} />
+        <meta property="twitter:description" content={description} />
+        <meta property="twitter:image" content={new URL(image, Astro.site)} />
+
+        <script
+            src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"
+        ></script>
+    </head>
+    <body>
+        <Header />
+        <div class="content">
+            <slot />
+        </div>
+
+        <!-- 懒加载脚本 -->
+        <script>
+            // 检查是否支持ES模块
+            if ("noModule" in HTMLScriptElement.prototype) {
+                // 现代浏览器，加载ES模块版本
+                import("../scripts/lazyLoader.ts").catch((error) => {
+                    console.warn("懒加载模块加载失败:", error);
+                });
+            } else {
+                // 旧浏览器降级处理
+                console.warn("浏览器不支持ES模块，懒加载功能可能受限");
+            }
+        </script>
+    </body>
 </html>
 
 <style is:global>
-  :root {
-    --accent: #2937f0;
-    --accent-light: #4e5ff3;
-  }
-  
-  html {
-    font-family: system-ui, sans-serif;
-    background: #f6f6f6;
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    margin: 0;
-    padding: 0;
-  }
-  
-  * {
-    box-sizing: border-box;
-  }
+    :root {
+        --accent: #2937f0;
+        --accent-light: #4e5ff3;
+    }
 
-  .content {
-    padding-top: 60px; /* Header 的高度 */
-    margin-left: 200px; /* 匹配新的侧边栏宽度 */
-  }
-</style> 
+    html {
+        font-family: system-ui, sans-serif;
+        background: #f6f6f6;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .content {
+        padding-top: 60px; /* Header 的高度 */
+        margin-left: 200px; /* 匹配新的侧边栏宽度 */
+    }
+</style>

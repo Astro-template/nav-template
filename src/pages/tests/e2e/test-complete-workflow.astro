@@ -131,6 +131,11 @@
     </div>
 
     <script>
+        // @ts-nocheck
+        // TypeScript 类型声明
+        type NetworkRequest = { url: string; status: string; timestamp: number; duration?: number; statusCode?: number; error?: string };
+        declare global { interface Window { networkRequests: NetworkRequest[]; } }
+
         // 网络请求日志 - 使用简单的数组
         window.networkRequests = [];
 
@@ -211,7 +216,7 @@
             
             try {
                 resultDiv.style.display = 'block';
-                resultDiv.className = 'result success';
+                resultDiv!.className = 'result success';
                 
                 var result = '🎉 Astro页面测试成功！\n\n';
                 result += '测试项目:\n';
@@ -223,13 +228,13 @@
                 result += '测试时间: ' + new Date().toLocaleString() + '\n';
                 result += '页面URL: ' + window.location.href;
                 
-                resultDiv.textContent = result;
+                resultDiv!.textContent = result;
                 console.log('✅ 基础测试完成');
                 
             } catch (error) {
                 resultDiv.style.display = 'block';
-                resultDiv.className = 'result error';
-                resultDiv.textContent = '❌ 基础测试失败:\n' + error.message;
+                resultDiv!.className = 'result error';
+                resultDiv!.textContent = '❌ 基础测试失败:\n' + error.message;
                 console.error('❌ 基础测试失败:', error);
             }
         }
@@ -246,10 +251,10 @@
             }
             
             resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在加载配置文件...';
+            resultDiv!.className = 'result info';
+            resultDiv!.textContent = '🔄 正在加载配置文件...';
             
-            var configPath = select.value;
+            var configPath = (select as HTMLSelectElement).value;
             console.log('📋 加载配置:', configPath);
             
             fetch(configPath)
@@ -291,13 +296,13 @@
                         result += '压缩比例: ' + (config.optimization.compressionRatio || 'N/A') + '%\n';
                     }
                     
-                    resultDiv.className = 'result success';
-                    resultDiv.textContent = result;
+                    resultDiv!.className = 'result success';
+                    resultDiv!.textContent = result;
                     console.log('✅ 配置文件测试完成');
                 })
                 .catch(function(error) {
-                    resultDiv.className = 'result error';
-                    resultDiv.textContent = '❌ 配置文件测试失败:\n' + error.message;
+                    resultDiv!.className = 'result error';
+                    resultDiv!.textContent = '❌ 配置文件测试失败:\n' + error.message;
                     console.error('❌ 配置文件测试失败:', error);
                 });
         }
@@ -314,10 +319,10 @@
             }
             
             resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在测试懒加载...';
+            resultDiv!.className = 'result info';
+            resultDiv!.textContent = '🔄 正在测试懒加载...';
             
-            var categoryId = select.value;
+            var categoryId = (select as HTMLSelectElement).value;
             var categoryPath = '/categories/' + categoryId + '.json';
             console.log('📂 加载分类:', categoryPath);
             
@@ -357,13 +362,13 @@
                     
                     result += '\n🎯 这证明懒加载功能完全正常工作！';
                     
-                    resultDiv.className = 'result success';
-                    resultDiv.textContent = result;
+                    resultDiv!.className = 'result success';
+                    resultDiv!.textContent = result;
                     console.log('✅ 懒加载测试完成');
                 })
                 .catch(function(error) {
-                    resultDiv.className = 'result error';
-                    resultDiv.textContent = '❌ 懒加载测试失败:\n' + error.message;
+                    resultDiv!.className = 'result error';
+                    resultDiv!.textContent = '❌ 懒加载测试失败:\n' + error.message;
                     console.error('❌ 懒加载测试失败:', error);
                 });
         }
@@ -379,8 +384,8 @@
             }
 
             resultDiv.style.display = 'block';
-            resultDiv.className = 'result info';
-            resultDiv.textContent = '🔄 正在测试ConfigManager格式检测...';
+            resultDiv!.className = 'result info';
+            resultDiv!.textContent = '🔄 正在测试ConfigManager格式检测...';
 
             // 测试优化配置
             fetch('/config.json')
@@ -469,13 +474,13 @@
                         result += '  - 压缩比例: ' + (config.optimization.compressionRatio || 'N/A') + '%\n';
                     }
 
-                    resultDiv.className = confidencePercent >= 90 ? 'result success' : 'result error';
-                    resultDiv.textContent = result;
+                    resultDiv!.className = confidencePercent >= 90 ? 'result success' : 'result error';
+                    resultDiv!.textContent = result;
                     console.log('✅ ConfigManager测试完成');
                 })
                 .catch(function(error) {
-                    resultDiv.className = 'result error';
-                    resultDiv.textContent = '❌ ConfigManager测试失败:\n' + error.message;
+                    resultDiv!.className = 'result error';
+                    resultDiv!.textContent = '❌ ConfigManager测试失败:\n' + error.message;
                     console.error('❌ ConfigManager测试失败:', error);
                 });
         }

@@ -422,7 +422,7 @@ const successRate = (successCount / totalTests * 100).toFixed(1);
     ))}
   </div>
 
-  <script define:vars={{ testResults }}>
+  <script is:inline define:vars={{ testResults }}>
     console.log('🔗 LoadingIndicator集成测试页面已加载');
     console.log('📊 集成测试结果:', JSON.stringify(testResults, null, 2));
 

@@ -1,210 +1,220 @@
 ---
-import type { Category } from '../data/navigation';
-import NavItem from './NavItem.astro';
+import type { Category } from "../types/navigation";
+import NavItem from "./NavItem.astro";
 
 interface Props {
-  category: Category;
-  index: number;
+    category: Category;
+    index: number;
 }
 
 const { category, index } = Astro.props;
 ---
 
 <div class="category-card" id={`category-${index}`}>
-  <h2>
-    <iconify-icon icon={category.icon} class="category-icon"></iconify-icon>
-    {category.name}
-  </h2>
-  
-  {category.subCategories ? (
-    <div class="subcategories-tabs">
-      <div class="tabs">
-        {category.subCategories.map((sub, subIndex) => (
-          <button 
-            class="tab-button" 
-            data-tab={`tab-${index}-${subIndex}`}
-            data-active={subIndex === 0}
-            data-category={index}
-            data-subindex={subIndex}
-          >
-            {sub.name}
-          </button>
-        ))}
-      </div>
-      <div class="tab-contents">
-        {category.subCategories.map((subCategory, subIndex) => (
-          <div 
-            class="tab-content" 
-            id={`tab-${index}-${subIndex}`}
-            style={subIndex === 0 ? "display: grid;" : "display: none;"}
-          >
-            {subCategory.items.map(item => (
-              <NavItem {...item} />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  ) : (
-    <div class="items-grid">
-      {category.items?.map(item => (
-        <NavItem {...item} />
-      ))}
-    </div>
-  )}
+    <h2>
+        <iconify-icon icon={category.icon} class="category-icon"></iconify-icon>
+        {category.name}
+    </h2>
+
+    {
+        category.subCategories ? (
+            <div class="subcategories-tabs">
+                <div class="tabs">
+                    {category.subCategories.map((sub, subIndex) => (
+                        <button
+                            class="tab-button"
+                            data-tab={`tab-${index}-${subIndex}`}
+                            data-active={subIndex === 0}
+                            data-category={index}
+                            data-subindex={subIndex}
+                        >
+                            {sub.name}
+                        </button>
+                    ))}
+                </div>
+                <div class="tab-contents">
+                    {category.subCategories.map((subCategory, subIndex) => (
+                        <div
+                            class="tab-content"
+                            id={`tab-${index}-${subIndex}`}
+                            style={
+                                subIndex === 0
+                                    ? "display: grid;"
+                                    : "display: none;"
+                            }
+                        >
+                            {subCategory.items.map((item) => (
+                                <NavItem {...item} />
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        ) : (
+            <div class="items-grid">
+                {category.items?.map((item) => (
+                    <NavItem {...item} />
+                ))}
+            </div>
+        )
+    }
 </div>
 
 <style>
-  .category-card {
-    margin: 0.75rem 0;
-    scroll-margin-top: 100px;
-  }
-
-  h2 {
-    color: #333;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1.1rem;
-  }
-
-  .category-icon {
-    font-size: 1.1rem;
-    color: #2937f0;
-  }
-
-  .subcategories-tabs {
-    background: white;
-    border-radius: 8px;
-    padding: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-
-  .tabs {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.5rem;
-    overflow-x: auto;
-  }
-
-  .tab-button {
-    background: none;
-    border: none;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.9rem;
-    color: #666;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-  }
-
-  .tab-button[data-active="true"] {
-    background: #2937f0;
-    color: white;
-  }
-
-  .tab-button:hover:not([data-active="true"]) {
-    background: #f5f5f5;
-    color: #2937f0;
-  }
-
-  .tab-contents {
-    position: relative;
-  }
-
-  .tab-content {
-    display: grid;
-    grid-template-columns: repeat(6, 180px);
-    gap: 4px;
-    width: 100%;
-    padding: 0.25rem;
-    justify-content: start;
-  }
-
-  .items-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 180px);
-    gap: 4px;
-    width: 100%;
-    padding: 0.25rem;
-    justify-content: start;
-  }
-
-  @media (max-width: 1800px) {
-    .tab-content,
-    .items-grid {
-      grid-template-columns: repeat(5, 180px);
+    .category-card {
+        margin: 0.75rem 0;
+        scroll-margin-top: 100px;
     }
-  }
 
-  @media (max-width: 1500px) {
-    .tab-content,
-    .items-grid {
-      grid-template-columns: repeat(4, 180px);
+    h2 {
+        color: #333;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
     }
-  }
 
-  @media (max-width: 1200px) {
-    .tab-content,
-    .items-grid {
-      grid-template-columns: repeat(3, 180px);
+    .category-icon {
+        font-size: 1.1rem;
+        color: #2937f0;
     }
-  }
 
-  @media (max-width: 768px) {
-    .tab-content,
-    .items-grid {
-      grid-template-columns: repeat(2, 180px);
+    .subcategories-tabs {
+        background: white;
+        border-radius: 8px;
+        padding: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
-  }
 
-  @media (max-width: 480px) {
-    .tab-content,
-    .items-grid {
-      grid-template-columns: 180px;
+    .tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 0.5rem;
+        overflow-x: auto;
     }
-  }
+
+    .tab-button {
+        background: none;
+        border: none;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.9rem;
+        color: #666;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .tab-button[data-active="true"] {
+        background: #2937f0;
+        color: white;
+    }
+
+    .tab-button:hover:not([data-active="true"]) {
+        background: #f5f5f5;
+        color: #2937f0;
+    }
+
+    .tab-contents {
+        position: relative;
+    }
+
+    .tab-content {
+        display: grid;
+        grid-template-columns: repeat(6, 180px);
+        gap: 4px;
+        width: 100%;
+        padding: 0.25rem;
+        justify-content: start;
+    }
+
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 180px);
+        gap: 4px;
+        width: 100%;
+        padding: 0.25rem;
+        justify-content: start;
+    }
+
+    @media (max-width: 1800px) {
+        .tab-content,
+        .items-grid {
+            grid-template-columns: repeat(5, 180px);
+        }
+    }
+
+    @media (max-width: 1500px) {
+        .tab-content,
+        .items-grid {
+            grid-template-columns: repeat(4, 180px);
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .tab-content,
+        .items-grid {
+            grid-template-columns: repeat(3, 180px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .tab-content,
+        .items-grid {
+            grid-template-columns: repeat(2, 180px);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .tab-content,
+        .items-grid {
+            grid-template-columns: 180px;
+        }
+    }
 </style>
 
 <script>
-  function setupTabs() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    
-    tabButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const tabId = button.getAttribute('data-tab');
-        const parentCard = button.closest('.category-card');
-        
-        if (tabId && parentCard) {
-          // 更新所有按钮状态
-          parentCard.querySelectorAll('.tab-button').forEach(btn => {
-            btn.setAttribute('data-active', 'false');
-          });
-          
-          // 设置当前按钮为激活状态
-          button.setAttribute('data-active', 'true');
-          
-          // 更新内容显示
-          parentCard.querySelectorAll('.tab-content').forEach((content: Element) => {
-            if (content instanceof HTMLElement) {
-              content.style.display = 'none';
-            }
-          });
-          
-          const tabContent = document.getElementById(tabId);
-          if (tabContent instanceof HTMLElement) {
-            tabContent.style.display = 'grid';
-          }
-        }
-      });
-    });
-  }
+    function setupTabs() {
+        const tabButtons = document.querySelectorAll(".tab-button");
 
-  document.addEventListener('DOMContentLoaded', setupTabs);
-</script> 
+        tabButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const tabId = button.getAttribute("data-tab");
+                const parentCard = button.closest(".category-card");
+
+                if (tabId && parentCard) {
+                    // 更新所有按钮状态
+                    parentCard
+                        .querySelectorAll(".tab-button")
+                        .forEach((btn) => {
+                            btn.setAttribute("data-active", "false");
+                        });
+
+                    // 设置当前按钮为激活状态
+                    button.setAttribute("data-active", "true");
+
+                    // 更新内容显示
+                    parentCard
+                        .querySelectorAll(".tab-content")
+                        .forEach((content: Element) => {
+                            if (content instanceof HTMLElement) {
+                                content.style.display = "none";
+                            }
+                        });
+
+                    const tabContent = document.getElementById(tabId);
+                    if (tabContent instanceof HTMLElement) {
+                        tabContent.style.display = "grid";
+                    }
+                }
+            });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", setupTabs);
+</script>

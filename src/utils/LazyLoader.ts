@@ -6,11 +6,11 @@
 import type {
   CategoryData,
   CategoryLoadResult,
-  LoadingState
-} from '../types/lazyLoading';
-import { ConfigManager } from './ConfigManager';
-import { LocalStorageCache } from './LocalStorageCache';
-import { defaultErrorHandler } from './ErrorHandler';
+  LoadingState,
+} from "../types/lazyLoading";
+import { ConfigManager } from "./ConfigManager";
+import { LocalStorageCache } from "./LocalStorageCache";
+import { defaultErrorHandler } from "./ErrorHandler";
 
 /**
  * LRU缓存节点
@@ -35,23 +35,26 @@ export class LazyLoader {
   private head?: CacheNode;
   private tail?: CacheNode;
   private maxCacheSize: number = 10;
-  
+
   // 并发请求去重
   private loadingPromises = new Map<number, Promise<CategoryLoadResult>>();
-  
+
   // 加载状态管理
   private loadingStates = new Map<number, LoadingState>();
-  
+
   // 配置选项
   private options = {
     maxRetries: 3,
     retryDelay: 1000,
     timeout: 10000,
     cacheExpiry: 30 * 60 * 1000, // 30分钟
-    preloadCount: 2 // 预加载数量
+    preloadCount: 2, // 预加载数量
   };
 
-  constructor(configManager?: ConfigManager, options?: Partial<typeof LazyLoader.prototype.options>) {
+  constructor(
+    configManager?: ConfigManager,
+    options?: Partial<typeof LazyLoader.prototype.options>,
+  ) {
     this.configManager = configManager || new ConfigManager();
     if (options) {
       this.options = { ...this.options, ...options };
@@ -59,17 +62,17 @@ export class LazyLoader {
 
     // 初始化本地存储缓存
     this.localStorageCache = new LocalStorageCache({
-      prefix: 'nav_category_',
+      prefix: "nav_category_",
       defaultTTL: 7 * 24 * 60 * 60 * 1000, // 7天
       maxSize: 5 * 1024 * 1024, // 5MB
       maxItems: 100,
-      enableCompression: true
+      enableCompression: true,
     });
 
-    console.log('🚀 LazyLoader初始化完成 (双层缓存)', {
+    console.log("🚀 LazyLoader初始化完成 (双层缓存)", {
       maxCacheSize: this.maxCacheSize,
       options: this.options,
-      localStorageEnabled: true
+      localStorageEnabled: true,
     });
   }
 
@@ -78,40 +81,41 @@ export class LazyLoader {
    */
   async loadCategory(categoryIndex: number): Promise<CategoryLoadResult> {
     console.log(`🔄 LazyLoader: 开始加载分类 ${categoryIndex}`);
-    
+
     // 1. 检查并发请求去重
     if (this.loadingPromises.has(categoryIndex)) {
       console.log(`⏳ 分类 ${categoryIndex} 正在加载中，等待现有请求`);
       return await this.loadingPromises.get(categoryIndex)!;
     }
-    
+
     // 2. 检查双层缓存
     const cachedResult = await this.getFromDualCache(categoryIndex);
     if (cachedResult) {
-      console.log(`📦 从${cachedResult.source}获取分类 ${categoryIndex}`);
+      const sourceText =
+        cachedResult.source === "memory" ? "内存缓存" : "本地存储缓存";
+      console.log(`📦 从${sourceText}获取分类 ${categoryIndex}`);
       return {
         success: true,
         data: cachedResult.data,
         fromCache: true,
         loadTime: 0,
-        cacheSource: cachedResult.source
+        cacheSource: cachedResult.source,
       };
     }
-    
+
     // 3. 创建加载Promise并添加到去重Map
     const loadPromise = this.performLoad(categoryIndex);
     this.loadingPromises.set(categoryIndex, loadPromise);
-    
+
     try {
       const result = await loadPromise;
-      
+
       // 4. 成功时添加到双层缓存
       if (result.success && result.data) {
         await this.addToDualCache(categoryIndex, result.data);
       }
-      
+
       return result;
-      
     } finally {
       // 5. 清理并发请求Map
       this.loadingPromises.delete(categoryIndex);
@@ -121,27 +125,31 @@ export class LazyLoader {
   /**
    * 批量加载多个分类
    */
-  async loadMultipleCategories(categoryIndexes: number[]): Promise<Map<number, CategoryLoadResult>> {
+  async loadMultipleCategories(
+    categoryIndexes: number[],
+  ): Promise<Map<number, CategoryLoadResult>> {
     console.log(`🔄 LazyLoader: 批量加载 ${categoryIndexes.length} 个分类`);
-    
+
     const results = new Map<number, CategoryLoadResult>();
-    
+
     // 并发加载所有分类
     const promises = categoryIndexes.map(async (index) => {
       const result = await this.loadCategory(index);
       results.set(index, result);
       return { index, result };
     });
-    
+
     await Promise.all(promises);
-    
-    const successCount = Array.from(results.values()).filter(r => r.success).length;
+
+    const successCount = Array.from(results.values()).filter(
+      (r) => r.success,
+    ).length;
     console.log(`✅ LazyLoader: 批量加载完成`, {
       total: categoryIndexes.length,
       success: successCount,
-      failed: categoryIndexes.length - successCount
+      failed: categoryIndexes.length - successCount,
     });
-    
+
     return results;
   }
 
@@ -150,7 +158,7 @@ export class LazyLoader {
    */
   async preloadCategories(currentIndex: number): Promise<void> {
     if (!this.configManager.isOptimizedMode()) {
-      console.log('⚠️ 非优化模式，跳过预加载');
+      console.log("⚠️ 非优化模式，跳过预加载");
       return;
     }
 
@@ -174,14 +182,16 @@ export class LazyLoader {
     }
 
     // 过滤掉已缓存的分类
-    const toPreload = preloadIndexes.filter(index => !this.memoryCache.has(index));
+    const toPreload = preloadIndexes.filter(
+      (index) => !this.memoryCache.has(index),
+    );
 
     if (toPreload.length > 0) {
-      console.log(`🔮 基础预加载分类: ${toPreload.join(', ')}`);
+      console.log(`🔮 基础预加载分类: ${toPreload.join(", ")}`);
 
       // 异步预加载，不等待结果
-      this.loadMultipleCategories(toPreload).catch(error => {
-        console.warn('⚠️ 基础预加载失败:', error);
+      this.loadMultipleCategories(toPreload).catch((error) => {
+        console.warn("⚠️ 基础预加载失败:", error);
       });
     }
   }
@@ -189,16 +199,19 @@ export class LazyLoader {
   /**
    * 高级预加载策略 (与PreloadStrategy集成)
    */
-  async executeAdvancedPreload(preloadStrategy: any, currentIndex?: number): Promise<void> {
+  async executeAdvancedPreload(
+    preloadStrategy: any,
+    currentIndex?: number,
+  ): Promise<void> {
     if (!this.configManager.isOptimizedMode()) {
-      console.log('⚠️ 非优化模式，跳过高级预加载');
+      console.log("⚠️ 非优化模式，跳过高级预加载");
       return;
     }
 
     try {
       await preloadStrategy.executePreload(currentIndex);
     } catch (error) {
-      console.warn('⚠️ 高级预加载失败:', error);
+      console.warn("⚠️ 高级预加载失败:", error);
       // 降级到基础预加载
       if (currentIndex !== undefined) {
         await this.preloadCategories(currentIndex);
@@ -209,35 +222,42 @@ export class LazyLoader {
   /**
    * 执行实际的加载操作
    */
-  private async performLoad(categoryIndex: number): Promise<CategoryLoadResult> {
+  private async performLoad(
+    categoryIndex: number,
+  ): Promise<CategoryLoadResult> {
     // 更新加载状态
-    this.updateLoadingState(categoryIndex, 'loading');
-    
+    this.updateLoadingState(categoryIndex, "loading");
+
     try {
       // 使用ConfigManager的loadCategoryData方法
       const result = await this.configManager.loadCategoryData(categoryIndex);
-      
+
       if (result.success) {
-        this.updateLoadingState(categoryIndex, 'success');
+        this.updateLoadingState(categoryIndex, "success");
         console.log(`✅ LazyLoader: 分类 ${categoryIndex} 加载成功`);
       } else {
-        this.updateLoadingState(categoryIndex, 'error');
-        console.error(`❌ LazyLoader: 分类 ${categoryIndex} 加载失败:`, result.error);
+        this.updateLoadingState(categoryIndex, "error");
+        console.error(
+          `❌ LazyLoader: 分类 ${categoryIndex} 加载失败:`,
+          result.error,
+        );
       }
-      
+
       return result;
-      
     } catch (error) {
-      this.updateLoadingState(categoryIndex, 'error');
-      const errorMessage = error instanceof Error ? error.message : '未知错误';
-      
-      console.error(`❌ LazyLoader: 分类 ${categoryIndex} 加载异常:`, errorMessage);
-      
+      this.updateLoadingState(categoryIndex, "error");
+      const errorMessage = error instanceof Error ? error.message : "未知错误";
+
+      console.error(
+        `❌ LazyLoader: 分类 ${categoryIndex} 加载异常:`,
+        errorMessage,
+      );
+
       return {
         success: false,
         error: errorMessage,
         fromCache: false,
-        loadTime: 0
+        loadTime: 0,
       };
     }
   }
@@ -245,20 +265,24 @@ export class LazyLoader {
   /**
    * 双层缓存 - 获取数据
    */
-  private async getFromDualCache(categoryIndex: number): Promise<{ data: CategoryData; source: string } | null> {
+  private async getFromDualCache(
+    categoryIndex: number,
+  ): Promise<{ data: CategoryData; source: "memory" | "localStorage" } | null> {
     // 1. 优先从内存缓存获取
     const memoryData = this.getFromMemoryCache(categoryIndex);
     if (memoryData) {
-      return { data: memoryData, source: '内存缓存' };
+      return { data: memoryData, source: "memory" };
     }
 
     // 2. 从本地存储缓存获取
     try {
-      const localData = await this.localStorageCache.get<CategoryData>(`category_${categoryIndex}`);
+      const localData = await this.localStorageCache.get<CategoryData>(
+        `category_${categoryIndex}`,
+      );
       if (localData) {
         // 加载到内存缓存
         this.addToMemoryCache(categoryIndex, localData);
-        return { data: localData, source: '本地存储缓存' };
+        return { data: localData, source: "localStorage" };
       }
     } catch (error) {
       console.warn(`💾 从本地存储获取分类 ${categoryIndex} 失败:`, error);
@@ -270,7 +294,10 @@ export class LazyLoader {
   /**
    * 双层缓存 - 添加数据
    */
-  private async addToDualCache(categoryIndex: number, data: CategoryData): Promise<void> {
+  private async addToDualCache(
+    categoryIndex: number,
+    data: CategoryData,
+  ): Promise<void> {
     // 1. 添加到内存缓存
     this.addToMemoryCache(categoryIndex, data);
 
@@ -317,7 +344,7 @@ export class LazyLoader {
     const newNode: CacheNode = {
       key: categoryIndex,
       value: data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // 添加到缓存Map
@@ -334,7 +361,9 @@ export class LazyLoader {
       }
     }
 
-    console.log(`📦 添加到内存缓存: 分类 ${categoryIndex} (缓存大小: ${this.memoryCache.size})`);
+    console.log(
+      `📦 添加到内存缓存: 分类 ${categoryIndex} (缓存大小: ${this.memoryCache.size})`,
+    );
   }
 
   /**
@@ -348,20 +377,18 @@ export class LazyLoader {
     }
   }
 
-
-
   /**
    * LRU链表操作 - 添加到头部
    */
   private addToHead(node: CacheNode): void {
     node.prev = undefined;
     node.next = this.head;
-    
+
     if (this.head) {
       this.head.prev = node;
     }
     this.head = node;
-    
+
     if (!this.tail) {
       this.tail = node;
     }
@@ -376,7 +403,7 @@ export class LazyLoader {
     } else {
       this.head = node.next;
     }
-    
+
     if (node.next) {
       node.next.prev = node.prev;
     } else {
@@ -414,18 +441,20 @@ export class LazyLoader {
    * 获取加载状态
    */
   getLoadingState(categoryIndex: number): LoadingState {
-    return this.loadingStates.get(categoryIndex) || 'idle';
+    return this.loadingStates.get(categoryIndex) || "idle";
   }
 
   /**
    * 获取缓存统计信息 (双层缓存)
    */
   getCacheStats() {
-    const memoryCacheArray = Array.from(this.memoryCache.entries()).map(([key, node]) => ({
-      categoryIndex: key,
-      timestamp: node.timestamp,
-      age: Date.now() - node.timestamp
-    }));
+    const memoryCacheArray = Array.from(this.memoryCache.entries()).map(
+      ([key, node]) => ({
+        categoryIndex: key,
+        timestamp: node.timestamp,
+        age: Date.now() - node.timestamp,
+      }),
+    );
 
     const localStorageStats = this.localStorageCache.getStats();
 
@@ -433,7 +462,7 @@ export class LazyLoader {
       memoryCache: {
         cacheSize: this.memoryCache.size,
         maxCacheSize: this.maxCacheSize,
-        cacheEntries: memoryCacheArray
+        cacheEntries: memoryCacheArray,
       },
       localStorage: localStorageStats,
       loadingPromises: this.loadingPromises.size,
@@ -441,7 +470,7 @@ export class LazyLoader {
       options: this.options,
       // 兼容性字段
       cacheSize: this.memoryCache.size,
-      hitRate: localStorageStats.hitRate
+      hitRate: localStorageStats.hitRate,
     };
   }
 
@@ -485,7 +514,7 @@ export class LazyLoader {
     // 清空本地存储缓存
     await this.localStorageCache.clear();
 
-    console.log('🗑️ LazyLoader: 已清空所有双层缓存');
+    console.log("🗑️ LazyLoader: 已清空所有双层缓存");
   }
 }
 
@@ -495,14 +524,18 @@ export const defaultLazyLoader = new LazyLoader();
 /**
  * 便捷函数：加载分类数据
  */
-export async function loadCategoryWithLazyLoader(categoryIndex: number): Promise<CategoryLoadResult> {
+export async function loadCategoryWithLazyLoader(
+  categoryIndex: number,
+): Promise<CategoryLoadResult> {
   return defaultLazyLoader.loadCategory(categoryIndex);
 }
 
 /**
  * 便捷函数：批量加载分类数据
  */
-export async function loadMultipleCategoriesWithLazyLoader(categoryIndexes: number[]): Promise<Map<number, CategoryLoadResult>> {
+export async function loadMultipleCategoriesWithLazyLoader(
+  categoryIndexes: number[],
+): Promise<Map<number, CategoryLoadResult>> {
   return defaultLazyLoader.loadMultipleCategories(categoryIndexes);
 }
 

@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../../layouts/Layout.astro';
 ---
 
 <Layout title="Headers调试">
@@ -61,6 +61,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+        // @ts-nocheck
   const result = document.getElementById('result') as HTMLElement;
   const resultContent = document.getElementById('resultContent') as HTMLElement;
   

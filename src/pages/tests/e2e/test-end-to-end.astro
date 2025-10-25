@@ -526,7 +526,7 @@ const stepSuccessRate = (successfulSteps / totalSteps * 100).toFixed(1);
     ))}
   </div>
 
-  <script define:vars={{ e2eResults }}>
+  <script is:inline define:vars={{ e2eResults }}>
     console.log('🔄 端到端测试页面已加载');
     console.log('📊 E2E测试结果:', JSON.stringify(e2eResults, null, 2));
   </script>

@@ -501,3 +501,4 @@ const lazyLoader = new ClientLazyLoader();
 (window as any).lazyLoader = lazyLoader;
 
 console.log("🚀 客户端懒加载器已加载");
+export {};

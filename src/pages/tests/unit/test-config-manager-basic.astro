@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../../layouts/Layout.astro';
 ---
 
 <Layout title="ConfigManager 测试页面" description="测试新的ConfigManager功能">
@@ -77,7 +77,8 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { ConfigManager } from '../utils/ConfigManager';
+        // @ts-nocheck
+  import { ConfigManager } from '../../../utils/ConfigManager';
 
   // 获取DOM元素
   const loadConfigBtn = document.getElementById('loadConfigBtn') as HTMLButtonElement;

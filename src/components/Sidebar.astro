@@ -1,258 +1,272 @@
 ---
-import { getMenuItems } from '../utils/config';
-import { convertMenuItemToCategory } from '../utils/dataConverter';
+import { getMenuItems } from "../utils/config";
+import { convertMenuItemToCategory } from "../utils/dataConverter";
 
 // 获取配置数据并转换为旧格式以保持兼容性
 const menuItems = getMenuItems();
 const navigationData = menuItems.map(convertMenuItemToCategory);
 
 // 辅助函数：计算项目总数
-function getItemCount(category) {
-  if (category.items) {
-    return category.items.length;
-  }
-  if (category.subCategories) {
-    return category.subCategories.reduce((total, sub) => total + sub.items.length, 0);
-  }
-  return 0;
+function getItemCount(category: any): number {
+    if (category.items) {
+        return category.items.length;
+    }
+    if (category.subCategories) {
+        return category.subCategories.reduce(
+            (total: number, sub: any) => total + sub.items.length,
+            0,
+        );
+    }
+    return 0;
 }
 ---
 
 <aside class="sidebar">
-  <div class="sidebar-content">
-    <div class="logo-container">
-      <div class="logo">
-        <span class="logo-icon">A</span>
-      </div>
-      <h1 class="logo-text">Affiliate导航</h1>
-      <p class="logo-subtitle">专业的Affiliate营销导航</p>
-    </div>
-    <div class="category-list">
-      {navigationData.map((category, index) => (
-        <div class="category-wrapper">
-          <a href={`/#category-${index}`} class="category-link">
-            <div class="category-info">
-              <iconify-icon icon={category.icon} class="category-icon"></iconify-icon>
-              <span>{category.name}</span>
+    <div class="sidebar-content">
+        <div class="logo-container">
+            <div class="logo">
+                <span class="logo-icon">A</span>
             </div>
-            <span class="item-count">({getItemCount(category)})</span>
-          </a>
-          {category.subCategories && (
-            <div class="subcategory-list">
-              {category.subCategories.map((sub, subIndex) => (
-                <a 
-                  href={`/#category-${index}`} 
-                  class="subcategory-link"
-                  data-category={index}
-                  data-tab={subIndex}
-                >
-                  {sub.name}
-                  <span class="item-count">({sub.items.length})</span>
-                </a>
-              ))}
-            </div>
-          )}
+            <h1 class="logo-text">Affiliate导航</h1>
+            <p class="logo-subtitle">专业的Affiliate营销导航</p>
         </div>
-      ))}
+        <div class="category-list">
+            {
+                navigationData.map((category, index) => (
+                    <div class="category-wrapper">
+                        <a href={`/#category-${index}`} class="category-link">
+                            <div class="category-info">
+                                <iconify-icon
+                                    icon={category.icon}
+                                    class="category-icon"
+                                />
+                                <span>{category.name}</span>
+                            </div>
+                            <span class="item-count">
+                                ({getItemCount(category)})
+                            </span>
+                        </a>
+                        {category.subCategories && (
+                            <div class="subcategory-list">
+                                {category.subCategories.map((sub, subIndex) => (
+                                    <a
+                                        href={`/#category-${index}`}
+                                        class="subcategory-link"
+                                        data-category={index}
+                                        data-tab={subIndex}
+                                    >
+                                        {sub.name}
+                                        <span class="item-count">
+                                            ({sub.items.length})
+                                        </span>
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))
+            }
+        </div>
     </div>
-  </div>
 </aside>
 
 <style>
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 200px;
-    height: 100vh;
-    background: white;
-    border-right: 1px solid #eaeaea;
-    overflow-y: auto;
-  }
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 200px;
+        height: 100vh;
+        background: white;
+        border-right: 1px solid #eaeaea;
+        overflow-y: auto;
+    }
 
-  .sidebar-content {
-    padding: 1rem;
-  }
+    .sidebar-content {
+        padding: 1rem;
+    }
 
-  .logo-container {
-    padding: 1rem 0 1.5rem 0;
-    text-align: center;
-    border-bottom: 1px solid #eaeaea;
-    margin-bottom: 1rem;
-  }
+    .logo-container {
+        padding: 1rem 0 1.5rem 0;
+        text-align: center;
+        border-bottom: 1px solid #eaeaea;
+        margin-bottom: 1rem;
+    }
 
-  .logo {
-    width: 56px;
-    height: 56px;
-    margin: 0 auto 0.8rem;
-    background: linear-gradient(135deg, #2937f0, #4e5ff3);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(41, 55, 240, 0.2);
-  }
+    .logo {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 0.8rem;
+        background: linear-gradient(135deg, #2937f0, #4e5ff3);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(41, 55, 240, 0.2);
+    }
 
-  .logo-icon {
-    color: white;
-    font-size: 1.8rem;
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-  }
+    .logo-icon {
+        color: white;
+        font-size: 1.8rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-  .logo-text {
-    font-size: 1.1rem;
-    color: #2937f0;
-    margin: 0;
-    font-weight: 600;
-  }
+    .logo-text {
+        font-size: 1.1rem;
+        color: #2937f0;
+        margin: 0;
+        font-weight: 600;
+    }
 
-  .logo-subtitle {
-    font-size: 0.8rem;
-    color: #666;
-    margin: 0.4rem 0 0 0;
-  }
+    .logo-subtitle {
+        font-size: 0.8rem;
+        color: #666;
+        margin: 0.4rem 0 0 0;
+    }
 
-  .category-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
+    .category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
 
-  .category-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.6rem 0.8rem;
-    color: #333;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-  }
+    .category-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0.8rem;
+        color: #333;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
 
-  .category-info {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
+    .category-info {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
 
-  .category-icon {
-    font-size: 1.1rem;
-    color: #666;
-  }
+    .category-icon {
+        font-size: 1.1rem;
+        color: #666;
+    }
 
-  .category-link:hover {
-    background: #f5f5f5;
-    color: #2937f0;
-  }
+    .category-link:hover {
+        background: #f5f5f5;
+        color: #2937f0;
+    }
 
-  .category-link:hover .category-icon {
-    color: #2937f0;
-  }
+    .category-link:hover .category-icon {
+        color: #2937f0;
+    }
 
-  .item-count {
-    font-size: 0.9rem;
-    color: #666;
-  }
+    .item-count {
+        font-size: 0.9rem;
+        color: #666;
+    }
 
-  /* 添加滚动条样式 */
-  .sidebar::-webkit-scrollbar {
-    width: 6px;
-  }
+    /* 添加滚动条样式 */
+    .sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
 
-  .sidebar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
+    .sidebar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
 
-  .sidebar::-webkit-scrollbar-thumb {
-    background: #ddd;
-    border-radius: 3px;
-  }
+    .sidebar::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 3px;
+    }
 
-  .sidebar::-webkit-scrollbar-thumb:hover {
-    background: #2937f0;
-  }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background: #2937f0;
+    }
 
-  .category-wrapper {
-    margin-bottom: 0.5rem;
-  }
+    .category-wrapper {
+        margin-bottom: 0.5rem;
+    }
 
-  .subcategory-list {
-    margin-left: 2rem;
-    margin-top: 0.2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
+    .subcategory-list {
+        margin-left: 2rem;
+        margin-top: 0.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
 
-  .subcategory-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.4rem 0.6rem;
-    color: #666;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-  }
+    .subcategory-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0.6rem;
+        color: #666;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
 
-  .subcategory-link:hover {
-    background: #f5f5f5;
-    color: #2937f0;
-  }
+    .subcategory-link:hover {
+        background: #f5f5f5;
+        color: #2937f0;
+    }
 
-  .subcategory-link.active {
-    background: #f5f5f5;
-    color: #2937f0;
-  }
+    .subcategory-link.active {
+        background: #f5f5f5;
+        color: #2937f0;
+    }
 </style>
 
 <script>
-  function handleTabClick(event: Event) {
-    const link = event.target as HTMLAnchorElement;
-    const href = link.getAttribute('href');
-    
-    if (!href) return;
-    
-    event.preventDefault();
-    
-    try {
-      const categoryId = href.split('#')[1];
-      const categoryIndex = link.getAttribute('data-category');
-      const tabIndex = link.getAttribute('data-tab');
-      
-      if (!categoryId || !categoryIndex || !tabIndex) return;
-      
-      // 找到对应的标签按钮并点击
-      const tabButton = document.querySelector(
-        `#category-${categoryIndex} .tab-button[data-tab="tab-${categoryIndex}-${tabIndex}"]`
-      ) as HTMLElement;
-      
-      if (tabButton) {
-        // 更新所有子菜单的激活状态
-        document.querySelectorAll('.subcategory-link').forEach(link => {
-          link.classList.remove('active');
-        });
-        
-        // 设置当前子菜单为激活状态
-        link.classList.add('active');
-        
-        // 点击对应的标签按钮
-        tabButton.click();
-        
-        // 滚动到对应的分类
-        const categoryElement = document.getElementById(categoryId);
-        if (categoryElement) {
-          categoryElement.scrollIntoView({ behavior: 'smooth' });
+    function handleTabClick(event: Event) {
+        const link = event.target as HTMLAnchorElement;
+        const href = link.getAttribute("href");
+
+        if (!href) return;
+
+        event.preventDefault();
+
+        try {
+            const categoryId = href.split("#")[1];
+            const categoryIndex = link.getAttribute("data-category");
+            const tabIndex = link.getAttribute("data-tab");
+
+            if (!categoryId || !categoryIndex || !tabIndex) return;
+
+            // 找到对应的标签按钮并点击
+            const tabButton = document.querySelector(
+                `#category-${categoryIndex} .tab-button[data-tab="tab-${categoryIndex}-${tabIndex}"]`,
+            ) as HTMLElement;
+
+            if (tabButton) {
+                // 更新所有子菜单的激活状态
+                document
+                    .querySelectorAll(".subcategory-link")
+                    .forEach((link) => {
+                        link.classList.remove("active");
+                    });
+
+                // 设置当前子菜单为激活状态
+                link.classList.add("active");
+
+                // 点击对应的标签按钮
+                tabButton.click();
+
+                // 滚动到对应的分类
+                const categoryElement = document.getElementById(categoryId);
+                if (categoryElement) {
+                    categoryElement.scrollIntoView({ behavior: "smooth" });
+                }
+            }
+        } catch (error) {
+            console.error("Error handling tab click:", error);
         }
-      }
-    } catch (error) {
-      console.error('Error handling tab click:', error);
     }
-  }
-  
-  document.querySelectorAll('.subcategory-link').forEach(link => {
-    link.addEventListener('click', handleTabClick);
-  });
-</script> 
+
+    document.querySelectorAll(".subcategory-link").forEach((link) => {
+        link.addEventListener("click", handleTabClick);
+    });
+</script>

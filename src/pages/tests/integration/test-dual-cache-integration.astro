@@ -710,7 +710,7 @@ const finalCacheStats = lazyLoader.getCacheStats();
     ))}
   </div>
 
-  <script define:vars={{ testResults, finalCacheStats }}>
+  <script is:inline define:vars={{ testResults, finalCacheStats }}>
     console.log('💾 双层缓存集成测试页面已加载');
     console.log('📊 集成测试结果:', JSON.stringify(testResults, null, 2));
     console.log('📊 最终缓存状态:', JSON.stringify(finalCacheStats, null, 2));

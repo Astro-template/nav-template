@@ -1,190 +1,221 @@
 ---
 interface Props {
-  url: string;
-  title: string;
+    url: string;
+    title: string;
 }
 
-const { url, title } = Astro.props;
+const { title } = Astro.props;
 ---
 
 <div class="qr-modal" id="qrModal">
-  <div class="qr-content">
-    <div class="qr-header">
-      <h3>手机扫码访问</h3>
-      <button class="close-button" id="closeQRCode">&times;</button>
+    <div class="qr-content">
+        <div class="qr-header">
+            <h3>手机扫码访问</h3>
+            <button class="close-button" id="closeQRCode">&times;</button>
+        </div>
+        <div class="qr-code" id="qrCode"></div>
+        <div class="qr-info">
+            <p class="qr-title">{title}</p>
+        </div>
     </div>
-    <div class="qr-code" id="qrCode"></div>
-    <div class="qr-info">
-      <p class="qr-title">{title}</p>
-    </div>
-  </div>
 </div>
 
 <script>
-  // 动态导入 QRCode
-  import QRCode from 'qrcode';
+    // 动态导入 QRCode
+    import QRCode from "qrcode";
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('qrModal');
-    const showButton = document.getElementById('showQRCode');
-    const closeButton = document.getElementById('closeQRCode');
-    const qrContainer = document.getElementById('qrCode');
-    
-    const clearQRCode = () => {
-      if (qrContainer) {
-        while (qrContainer.firstChild) {
-          qrContainer.removeChild(qrContainer.firstChild);
-        }
-      }
-    };
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("qrModal");
+        const showButton = document.getElementById("showQRCode");
+        const closeButton = document.getElementById("closeQRCode");
+        const qrContainer = document.getElementById("qrCode");
 
-    const generateQRCode = async () => {
-      clearQRCode();
-      
-      if (qrContainer) {
-        const button = document.getElementById('showQRCode');
-        const siteUrl = button?.dataset.url;
-        
-        if (!siteUrl) {
-          const message = document.createElement('div');
-          message.style.padding = '2rem';
-          message.style.color = '#666';
-          message.textContent = '暂无可用链接';
-          qrContainer.appendChild(message);
-          return;
-        }
-
-        try {
-          const canvas = document.createElement('canvas');
-          // 添加加载提示
-          const loadingMsg = document.createElement('div');
-          loadingMsg.textContent = '正在生成二维码...';
-          loadingMsg.style.color = '#666';
-          qrContainer.appendChild(loadingMsg);
-
-          await QRCode.toCanvas(canvas, siteUrl, {
-            width: 200,
-            margin: 2,
-            color: {
-              dark: '#2937f0',
-              light: '#ffffff'
+        const clearQRCode = () => {
+            if (qrContainer) {
+                while (qrContainer.firstChild) {
+                    qrContainer.removeChild(qrContainer.firstChild);
+                }
             }
-          });
+        };
 
-          // 移除加载提示
-          qrContainer.removeChild(loadingMsg);
+        const generateQRCode = async () => {
+            clearQRCode();
 
-          // 添加 logo
-          const ctx = canvas.getContext('2d');
-          const size = 200;
-          const centerSize = size * 0.25; // logo 大小为二维码的 25%
-          const centerPos = (size - centerSize) / 2;
-          
-          // 绘制白色背景
-          ctx.fillStyle = '#FFFFFF';
-          ctx.beginPath();
-          ctx.roundRect(centerPos - 4, centerPos - 4, centerSize + 8, centerSize + 8, 8);
-          ctx.fill();
+            if (qrContainer) {
+                const button = document.getElementById("showQRCode");
+                const siteUrl = button?.dataset.url;
 
-          // 创建并绘制 logo
-          const logo = new Image();
-          logo.onload = () => {
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(centerPos, centerPos, centerSize, centerSize, 6);
-            ctx.clip();
-            ctx.drawImage(logo, centerPos, centerPos, centerSize, centerSize);
-            ctx.restore();
-          };
-          logo.src = 'https://www.google.com/s2/favicons?domain=' + new URL(siteUrl).hostname + '&sz=128';
+                if (!siteUrl) {
+                    const message = document.createElement("div");
+                    message.style.padding = "2rem";
+                    message.style.color = "#666";
+                    message.textContent = "暂无可用链接";
+                    qrContainer.appendChild(message);
+                    return;
+                }
 
-          qrContainer.appendChild(canvas);
-          modal.style.display = 'flex';
-        } catch (error) {
-          console.error('Failed to generate QR code:', error);
-        }
-      }
-    };
+                try {
+                    const canvas = document.createElement("canvas");
+                    // 添加加载提示
+                    const loadingMsg = document.createElement("div");
+                    loadingMsg.textContent = "正在生成二维码...";
+                    loadingMsg.style.color = "#666";
+                    qrContainer.appendChild(loadingMsg);
 
-    showButton?.addEventListener('click', () => {
-      generateQRCode();
+                    await QRCode.toCanvas(canvas, siteUrl, {
+                        width: 200,
+                        margin: 2,
+                        color: {
+                            dark: "#2937f0",
+                            light: "#ffffff",
+                        },
+                    });
+
+                    // 移除加载提示
+                    qrContainer.removeChild(loadingMsg);
+
+                    // 添加 logo
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) {
+                        console.error("Failed to get canvas context");
+                        return;
+                    }
+
+                    const size = 200;
+                    const centerSize = size * 0.25; // logo 大小为二维码的 25%
+                    const centerPos = (size - centerSize) / 2;
+
+                    // 绘制白色背景
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.beginPath();
+                    ctx.roundRect(
+                        centerPos - 4,
+                        centerPos - 4,
+                        centerSize + 8,
+                        centerSize + 8,
+                        8,
+                    );
+                    ctx.fill();
+
+                    // 创建并绘制 logo
+                    const logo = new Image();
+                    logo.onload = () => {
+                        if (!ctx) return;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.roundRect(
+                            centerPos,
+                            centerPos,
+                            centerSize,
+                            centerSize,
+                            6,
+                        );
+                        ctx.clip();
+                        ctx.drawImage(
+                            logo,
+                            centerPos,
+                            centerPos,
+                            centerSize,
+                            centerSize,
+                        );
+                        ctx.restore();
+                    };
+                    logo.src =
+                        "https://www.google.com/s2/favicons?domain=" +
+                        new URL(siteUrl).hostname +
+                        "&sz=128";
+
+                    qrContainer.appendChild(canvas);
+                    if (modal) {
+                        modal.style.display = "flex";
+                    }
+                } catch (error) {
+                    console.error("Failed to generate QR code:", error);
+                }
+            }
+        };
+
+        showButton?.addEventListener("click", () => {
+            generateQRCode();
+        });
+
+        closeButton?.addEventListener("click", () => {
+            if (modal) {
+                modal.style.display = "none";
+            }
+            clearQRCode();
+        });
+
+        modal?.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.style.display = "none";
+                clearQRCode();
+            }
+        });
     });
-
-    closeButton?.addEventListener('click', () => {
-      modal.style.display = 'none';
-      clearQRCode();
-    });
-
-    modal?.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-        clearQRCode();
-      }
-    });
-  });
 </script>
 
 <style>
-  .qr-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
+    .qr-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
 
-  .qr-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    max-width: 90%;
-    width: 300px;
-  }
+    .qr-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        max-width: 90%;
+        width: 300px;
+    }
 
-  .qr-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
+    .qr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
 
-  .qr-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: #333;
-  }
+    .qr-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
 
-  .close-button {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    color: #666;
-  }
+    .close-button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        color: #666;
+    }
 
-  .close-button:hover {
-    color: #000;
-  }
+    .close-button:hover {
+        color: #000;
+    }
 
-  .qr-code {
-    display: flex;
-    justify-content: center;
-    margin: 1rem 0;
-  }
+    .qr-code {
+        display: flex;
+        justify-content: center;
+        margin: 1rem 0;
+    }
 
-  .qr-info {
-    text-align: center;
-  }
+    .qr-info {
+        text-align: center;
+    }
 
-  .qr-title {
-    margin: 0;
-    color: #666;
-    font-size: 0.9rem;
-  }
+    .qr-title {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
 </style>

@@ -3,42 +3,49 @@
  * Week 3 - 任务2.2
  */
 
+/**
+ * 检查是否在浏览器环境中
+ */
+function isBrowser(): boolean {
+  return typeof window !== "undefined";
+}
+
 export interface PerformanceMetrics {
   // 加载时间指标
   configLoadTime: number;
   categoryLoadTime: number;
   avgCategoryLoadTime: number;
-  
+
   // 缓存指标
   cacheHitRate: number;
   cacheSize: number;
   maxCacheSize: number;
-  
+
   // 网络指标
   networkRequestCount: number;
   failedRequestCount: number;
   avgResponseTime: number;
-  
+
   // 用户交互指标
   userInteractionCount: number;
   avgInteractionResponseTime: number;
-  
+
   // 预加载指标
   preloadCount: number;
   preloadSuccessRate: number;
   preloadCacheHitRate: number;
-  
+
   // 内存指标
   memoryUsage: number;
   memoryUsagePercentage: number;
-  
+
   // 时间戳
   lastUpdated: number;
   sessionStartTime: number;
 }
 
 export interface PerformanceAlert {
-  type: 'warning' | 'error' | 'info';
+  type: "warning" | "error" | "info";
   message: string;
   metric: string;
   value: number;
@@ -47,10 +54,10 @@ export interface PerformanceAlert {
 }
 
 export interface PerformanceRecommendation {
-  category: 'cache' | 'network' | 'preload' | 'memory';
+  category: "cache" | "network" | "preload" | "memory";
   title: string;
   description: string;
-  impact: 'high' | 'medium' | 'low';
+  impact: "high" | "medium" | "low";
   actionable: boolean;
 }
 
@@ -58,34 +65,36 @@ export class PerformanceMonitor {
   private metrics: PerformanceMetrics;
   private alerts: PerformanceAlert[] = [];
   private recommendations: PerformanceRecommendation[] = [];
-  
+
   // 性能阈值配置
   private thresholds = {
-    configLoadTime: 1000,        // 配置加载时间 < 1秒
-    categoryLoadTime: 2000,      // 分类加载时间 < 2秒
-    cacheHitRate: 80,            // 缓存命中率 > 80%
-    networkResponseTime: 1500,   // 网络响应时间 < 1.5秒
+    configLoadTime: 1000, // 配置加载时间 < 1秒
+    categoryLoadTime: 2000, // 分类加载时间 < 2秒
+    cacheHitRate: 80, // 缓存命中率 > 80%
+    networkResponseTime: 1500, // 网络响应时间 < 1.5秒
     interactionResponseTime: 100, // 交互响应时间 < 100ms
-    memoryUsage: 50,             // 内存使用 < 50MB
-    failureRate: 5               // 失败率 < 5%
+    memoryUsage: 50, // 内存使用 < 50MB
+    failureRate: 5, // 失败率 < 5%
   };
-  
+
   // 数据收集器
   private collectors = {
     loadTimes: [] as number[],
     responseTimes: [] as number[],
-    interactionTimes: [] as number[]
+    interactionTimes: [] as number[],
   };
-  
+
   // 更新定时器
   private updateTimer: number | null = null;
   private updateInterval = 5000; // 5秒更新一次
 
   constructor() {
     this.metrics = this.initializeMetrics();
-    this.startMonitoring();
-    
-    console.log('📊 PerformanceMonitor初始化完成');
+
+    if (isBrowser()) {
+      this.startMonitoring();
+      console.log("📊 PerformanceMonitor初始化完成");
+    }
   }
 
   /**
@@ -110,7 +119,7 @@ export class PerformanceMonitor {
       memoryUsage: 0,
       memoryUsagePercentage: 0,
       lastUpdated: Date.now(),
-      sessionStartTime: Date.now()
+      sessionStartTime: Date.now(),
     };
   }
 
@@ -118,6 +127,8 @@ export class PerformanceMonitor {
    * 开始监控
    */
   private startMonitoring(): void {
+    if (!isBrowser()) return;
+
     this.updateTimer = window.setInterval(() => {
       this.updateMetrics();
       this.checkAlerts();
@@ -140,7 +151,11 @@ export class PerformanceMonitor {
    */
   recordConfigLoadTime(loadTime: number): void {
     this.metrics.configLoadTime = loadTime;
-    this.checkThreshold('configLoadTime', loadTime, this.thresholds.configLoadTime);
+    this.checkThreshold(
+      "configLoadTime",
+      loadTime,
+      this.thresholds.configLoadTime,
+    );
     console.log(`📊 记录配置加载时间: ${loadTime.toFixed(2)}ms`);
   }
 
@@ -150,9 +165,15 @@ export class PerformanceMonitor {
   recordCategoryLoadTime(loadTime: number): void {
     this.collectors.loadTimes.push(loadTime);
     this.metrics.categoryLoadTime = loadTime;
-    this.metrics.avgCategoryLoadTime = this.calculateAverage(this.collectors.loadTimes);
-    
-    this.checkThreshold('categoryLoadTime', loadTime, this.thresholds.categoryLoadTime);
+    this.metrics.avgCategoryLoadTime = this.calculateAverage(
+      this.collectors.loadTimes,
+    );
+
+    this.checkThreshold(
+      "categoryLoadTime",
+      loadTime,
+      this.thresholds.categoryLoadTime,
+    );
     console.log(`📊 记录分类加载时间: ${loadTime.toFixed(2)}ms`);
   }
 
@@ -164,13 +185,25 @@ export class PerformanceMonitor {
     if (!success) {
       this.metrics.failedRequestCount++;
     }
-    
+
     this.collectors.responseTimes.push(responseTime);
-    this.metrics.avgResponseTime = this.calculateAverage(this.collectors.responseTimes);
-    
-    const failureRate = (this.metrics.failedRequestCount / this.metrics.networkRequestCount) * 100;
-    this.checkThreshold('failureRate', failureRate, this.thresholds.failureRate);
-    this.checkThreshold('responseTime', responseTime, this.thresholds.networkResponseTime);
+    this.metrics.avgResponseTime = this.calculateAverage(
+      this.collectors.responseTimes,
+    );
+
+    const failureRate =
+      (this.metrics.failedRequestCount / this.metrics.networkRequestCount) *
+      100;
+    this.checkThreshold(
+      "failureRate",
+      failureRate,
+      this.thresholds.failureRate,
+    );
+    this.checkThreshold(
+      "responseTime",
+      responseTime,
+      this.thresholds.networkResponseTime,
+    );
   }
 
   /**
@@ -179,26 +212,45 @@ export class PerformanceMonitor {
   recordUserInteraction(responseTime: number): void {
     this.metrics.userInteractionCount++;
     this.collectors.interactionTimes.push(responseTime);
-    this.metrics.avgInteractionResponseTime = this.calculateAverage(this.collectors.interactionTimes);
-    
-    this.checkThreshold('interactionResponseTime', responseTime, this.thresholds.interactionResponseTime);
+    this.metrics.avgInteractionResponseTime = this.calculateAverage(
+      this.collectors.interactionTimes,
+    );
+
+    this.checkThreshold(
+      "interactionResponseTime",
+      responseTime,
+      this.thresholds.interactionResponseTime,
+    );
   }
 
   /**
    * 更新缓存指标
    */
-  updateCacheMetrics(cacheSize: number, maxCacheSize: number, hitRate: number): void {
+  updateCacheMetrics(
+    cacheSize: number,
+    maxCacheSize: number,
+    hitRate: number,
+  ): void {
     this.metrics.cacheSize = cacheSize;
     this.metrics.maxCacheSize = maxCacheSize;
     this.metrics.cacheHitRate = hitRate;
-    
-    this.checkThreshold('cacheHitRate', hitRate, this.thresholds.cacheHitRate, 'below');
+
+    this.checkThreshold(
+      "cacheHitRate",
+      hitRate,
+      this.thresholds.cacheHitRate,
+      "below",
+    );
   }
 
   /**
    * 更新预加载指标
    */
-  updatePreloadMetrics(preloadCount: number, successRate: number, cacheHitRate: number): void {
+  updatePreloadMetrics(
+    preloadCount: number,
+    successRate: number,
+    cacheHitRate: number,
+  ): void {
     this.metrics.preloadCount = preloadCount;
     this.metrics.preloadSuccessRate = successRate;
     this.metrics.preloadCacheHitRate = cacheHitRate;
@@ -208,15 +260,15 @@ export class PerformanceMonitor {
    * 更新内存使用指标
    */
   private updateMemoryMetrics(): void {
-    if (typeof performance !== 'undefined' && (performance as any).memory) {
+    if (typeof performance !== "undefined" && (performance as any).memory) {
       const memory = (performance as any).memory;
       const usedMB = memory.usedJSHeapSize / 1024 / 1024;
       const totalMB = memory.totalJSHeapSize / 1024 / 1024;
-      
+
       this.metrics.memoryUsage = usedMB;
       this.metrics.memoryUsagePercentage = (usedMB / totalMB) * 100;
-      
-      this.checkThreshold('memoryUsage', usedMB, this.thresholds.memoryUsage);
+
+      this.checkThreshold("memoryUsage", usedMB, this.thresholds.memoryUsage);
     }
   }
 
@@ -232,30 +284,31 @@ export class PerformanceMonitor {
    * 检查阈值并生成警告
    */
   private checkThreshold(
-    metric: string, 
-    value: number, 
-    threshold: number, 
-    direction: 'above' | 'below' = 'above'
+    metric: string,
+    value: number,
+    threshold: number,
+    direction: "above" | "below" = "above",
   ): void {
-    const isAlert = direction === 'above' ? value > threshold : value < threshold;
-    
+    const isAlert =
+      direction === "above" ? value > threshold : value < threshold;
+
     if (isAlert) {
       const alert: PerformanceAlert = {
-        type: value > threshold * 1.5 ? 'error' : 'warning',
+        type: value > threshold * 1.5 ? "error" : "warning",
         message: this.getAlertMessage(metric, value, threshold, direction),
         metric,
         value,
         threshold,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
+
       this.alerts.unshift(alert);
-      
+
       // 保持最近20个警告
       if (this.alerts.length > 20) {
         this.alerts = this.alerts.slice(0, 20);
       }
-      
+
       console.warn(`⚠️ 性能警告: ${alert.message}`);
     }
   }
@@ -263,7 +316,12 @@ export class PerformanceMonitor {
   /**
    * 生成警告消息
    */
-  private getAlertMessage(metric: string, value: number, threshold: number, direction: string): string {
+  private getAlertMessage(
+    metric: string,
+    value: number,
+    threshold: number,
+    direction: string,
+  ): string {
     const messages: Record<string, string> = {
       configLoadTime: `配置加载时间过长: ${value.toFixed(0)}ms (阈值: ${threshold}ms)`,
       categoryLoadTime: `分类加载时间过长: ${value.toFixed(0)}ms (阈值: ${threshold}ms)`,
@@ -271,10 +329,12 @@ export class PerformanceMonitor {
       responseTime: `网络响应时间过长: ${value.toFixed(0)}ms (阈值: ${threshold}ms)`,
       interactionResponseTime: `交互响应时间过长: ${value.toFixed(0)}ms (阈值: ${threshold}ms)`,
       memoryUsage: `内存使用过高: ${value.toFixed(1)}MB (阈值: ${threshold}MB)`,
-      failureRate: `请求失败率过高: ${value.toFixed(1)}% (阈值: ${threshold}%)`
+      failureRate: `请求失败率过高: ${value.toFixed(1)}% (阈值: ${threshold}%)`,
     };
-    
-    return messages[metric] || `${metric} 超出阈值: ${value} (阈值: ${threshold})`;
+
+    return (
+      messages[metric] || `${metric} 超出阈值: ${value} (阈值: ${threshold})`
+    );
   }
 
   /**
@@ -283,7 +343,7 @@ export class PerformanceMonitor {
   private checkAlerts(): void {
     // 清理过期警告 (超过1小时)
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    this.alerts = this.alerts.filter(alert => alert.timestamp > oneHourAgo);
+    this.alerts = this.alerts.filter((alert) => alert.timestamp > oneHourAgo);
   }
 
   /**
@@ -291,48 +351,48 @@ export class PerformanceMonitor {
    */
   private generateRecommendations(): void {
     this.recommendations = [];
-    
+
     // 缓存相关建议
     if (this.metrics.cacheHitRate < 70) {
       this.recommendations.push({
-        category: 'cache',
-        title: '提高缓存命中率',
-        description: '当前缓存命中率较低，建议增加预加载策略或调整缓存大小',
-        impact: 'high',
-        actionable: true
+        category: "cache",
+        title: "提高缓存命中率",
+        description: "当前缓存命中率较低，建议增加预加载策略或调整缓存大小",
+        impact: "high",
+        actionable: true,
       });
     }
-    
+
     // 网络相关建议
     if (this.metrics.avgResponseTime > 1000) {
       this.recommendations.push({
-        category: 'network',
-        title: '优化网络请求',
-        description: '网络响应时间较长，建议检查网络连接或优化请求策略',
-        impact: 'medium',
-        actionable: true
+        category: "network",
+        title: "优化网络请求",
+        description: "网络响应时间较长，建议检查网络连接或优化请求策略",
+        impact: "medium",
+        actionable: true,
       });
     }
-    
+
     // 预加载相关建议
     if (this.metrics.preloadSuccessRate < 80 && this.metrics.preloadCount > 0) {
       this.recommendations.push({
-        category: 'preload',
-        title: '优化预加载策略',
-        description: '预加载成功率较低，建议调整预加载时机或减少预加载数量',
-        impact: 'medium',
-        actionable: true
+        category: "preload",
+        title: "优化预加载策略",
+        description: "预加载成功率较低，建议调整预加载时机或减少预加载数量",
+        impact: "medium",
+        actionable: true,
       });
     }
-    
+
     // 内存相关建议
     if (this.metrics.memoryUsage > 40) {
       this.recommendations.push({
-        category: 'memory',
-        title: '优化内存使用',
-        description: '内存使用较高，建议清理过期缓存或减少缓存大小',
-        impact: 'high',
-        actionable: true
+        category: "memory",
+        title: "优化内存使用",
+        description: "内存使用较高，建议清理过期缓存或减少缓存大小",
+        impact: "high",
+        actionable: true,
       });
     }
   }
@@ -342,12 +402,12 @@ export class PerformanceMonitor {
    */
   private calculateAverage(values: number[]): number {
     if (values.length === 0) return 0;
-    
+
     // 保持最近50个值
     if (values.length > 50) {
       values.splice(0, values.length - 50);
     }
-    
+
     return values.reduce((sum, value) => sum + value, 0) / values.length;
   }
 
@@ -377,42 +437,51 @@ export class PerformanceMonitor {
    */
   getPerformanceScore(): number {
     let score = 100;
-    
+
     // 配置加载时间评分 (20分)
     if (this.metrics.configLoadTime > this.thresholds.configLoadTime) {
       score -= 20;
-    } else if (this.metrics.configLoadTime > this.thresholds.configLoadTime * 0.7) {
+    } else if (
+      this.metrics.configLoadTime >
+      this.thresholds.configLoadTime * 0.7
+    ) {
       score -= 10;
     }
-    
+
     // 分类加载时间评分 (20分)
     if (this.metrics.avgCategoryLoadTime > this.thresholds.categoryLoadTime) {
       score -= 20;
-    } else if (this.metrics.avgCategoryLoadTime > this.thresholds.categoryLoadTime * 0.7) {
+    } else if (
+      this.metrics.avgCategoryLoadTime >
+      this.thresholds.categoryLoadTime * 0.7
+    ) {
       score -= 10;
     }
-    
+
     // 缓存命中率评分 (20分)
     if (this.metrics.cacheHitRate < this.thresholds.cacheHitRate) {
       score -= 20;
     } else if (this.metrics.cacheHitRate < this.thresholds.cacheHitRate * 1.1) {
       score -= 10;
     }
-    
+
     // 网络响应时间评分 (20分)
     if (this.metrics.avgResponseTime > this.thresholds.networkResponseTime) {
       score -= 20;
-    } else if (this.metrics.avgResponseTime > this.thresholds.networkResponseTime * 0.7) {
+    } else if (
+      this.metrics.avgResponseTime >
+      this.thresholds.networkResponseTime * 0.7
+    ) {
       score -= 10;
     }
-    
+
     // 内存使用评分 (20分)
     if (this.metrics.memoryUsage > this.thresholds.memoryUsage) {
       score -= 20;
     } else if (this.metrics.memoryUsage > this.thresholds.memoryUsage * 0.8) {
       score -= 10;
     }
-    
+
     return Math.max(0, score);
   }
 
@@ -426,10 +495,10 @@ export class PerformanceMonitor {
     this.collectors = {
       loadTimes: [],
       responseTimes: [],
-      interactionTimes: []
+      interactionTimes: [],
     };
-    
-    console.log('📊 性能监控数据已重置');
+
+    console.log("📊 性能监控数据已重置");
   }
 
   /**
@@ -441,9 +510,9 @@ export class PerformanceMonitor {
       alerts: this.alerts,
       recommendations: this.recommendations,
       score: this.getPerformanceScore(),
-      exportTime: new Date().toISOString()
+      exportTime: new Date().toISOString(),
     };
-    
+
     return JSON.stringify(report, null, 2);
   }
 }
@@ -470,7 +539,10 @@ export function recordCategoryLoad(loadTime: number): void {
 /**
  * 便捷函数：记录网络请求
  */
-export function recordNetworkRequest(responseTime: number, success: boolean = true): void {
+export function recordNetworkRequest(
+  responseTime: number,
+  success: boolean = true,
+): void {
   defaultPerformanceMonitor.recordNetworkRequest(responseTime, success);
 }
 

@@ -641,7 +641,7 @@ const performanceScore = Math.round(
     ))}
   </div>
 
-  <script define:vars={{ testResults, performanceMetrics }}>
+  <script is:inline define:vars={{ testResults, performanceMetrics }}>
     console.log('🧪 Week 3 基础集成测试页面已加载');
     console.log('📊 测试结果:', JSON.stringify(testResults, null, 2));
     console.log('⚡ 性能指标:', JSON.stringify(performanceMetrics, null, 2));

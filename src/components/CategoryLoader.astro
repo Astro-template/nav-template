@@ -13,13 +13,13 @@ interface Props {
   className?: string;
 }
 
-const { menuItem, isActive = false, showPreview = true, className = '' } = Astro.props;
+const { menuItem, showPreview = true, className = '' } = Astro.props;
 
 // 生成唯一ID
-const componentId = `category-loader-${menuItem.categoryIndex || Math.random().toString(36).substr(2, 9)}`;
+const componentId = `category-loader-${menuItem.categoryIndex || Math.random().toString(36).substring(2, 11)}`;
 ---
 
-<div 
+<div
   class={`category-loader ${className}`}
   data-category-index={menuItem.categoryIndex}
   data-component-id={componentId}
@@ -37,7 +37,7 @@ const componentId = `category-loader-${menuItem.categoryIndex || Math.random().t
           )}
         </h3>
         {menuItem.isLazyLoaded && (
-          <button 
+          <button
             class="load-more-btn"
             data-action="load-category"
             data-category-index={menuItem.categoryIndex}
@@ -48,7 +48,7 @@ const componentId = `category-loader-${menuItem.categoryIndex || Math.random().t
           </button>
         )}
       </div>
-      
+
       <div class="preview-sites">
         {menuItem.previewSites.map((site) => (
           <div class="site-card preview">
@@ -71,7 +71,7 @@ const componentId = `category-loader-${menuItem.categoryIndex || Math.random().t
           </div>
         ))}
       </div>
-      
+
       {menuItem.isLazyLoaded && menuItem.siteCount && menuItem.previewSites.length < menuItem.siteCount && (
         <div class="preview-footer">
           <p class="more-sites-hint">
@@ -103,12 +103,12 @@ const componentId = `category-loader-${menuItem.categoryIndex || Math.random().t
           </div>
         </div>
       </div>
-      
+
       <!-- 实际内容容器 -->
       <div class="loaded-content" style="display: none;">
         <!-- 内容将通过JavaScript动态插入 -->
       </div>
-      
+
       <!-- 错误状态 -->
       <div class="error-state" style="display: none;">
         <div class="error-message">
@@ -418,13 +418,13 @@ const componentId = `category-loader-${menuItem.categoryIndex || Math.random().t
     .sites-grid {
       grid-template-columns: 1fr;
     }
-    
+
     .preview-header {
       flex-direction: column;
       align-items: flex-start;
       gap: 1rem;
     }
-    
+
     .load-more-btn {
       align-self: stretch;
       justify-content: center;
