@@ -2,19 +2,19 @@
 
 export interface OptimizationOptions {
   enabled: boolean;
-  previewCount: number;    // 预览网站数量 (默认3)
-  chunkSizeLimit: number;  // 单个分类文件大小限制(KB) (默认100)
-  enablePreload: boolean;  // 是否启用预加载 (默认true)
+  previewCount: number; // 预览网站数量 (默认3)
+  chunkSizeLimit: number; // 单个分类文件大小限制(KB) (默认100)
+  enablePreload: boolean; // 是否启用预加载 (默认true)
 }
 
 export interface OptimizedMenuItem {
   name: string;
   href: string;
   icon: string;
-  type: 'single' | 'tabs';
-  categoryIndex: number;    // 对应 categories/N.json
-  siteCount: number;        // 网站总数
-  previewSites?: PreviewSite[];  // 预览网站数据
+  type: "single" | "tabs";
+  categoryIndex: number; // 对应 categories/N.json
+  siteCount: number; // 网站总数
+  previewSites?: PreviewSite[]; // 预览网站数据
   submenu?: OptimizedSubMenuItem[];
 }
 
@@ -89,7 +89,7 @@ export interface RelatedSite {
 }
 
 export interface CategoryFile {
-  filename: string;        // "0.json", "1.json", etc.
+  filename: string; // "0.json", "1.json", etc.
   content: CategoryData;
   sizeKB: number;
 }
@@ -104,11 +104,14 @@ export interface OptimizedConfigResult {
     compressionRatio: number;
     totalCategories: number;
     totalSites: number;
+    previewCount?: number;
+    chunkSizeLimit?: number;
+    enablePreload?: boolean;
   };
 }
 
 export interface TraditionalConfigResult {
-  config: any;  // 传统的完整配置
+  config: any; // 传统的完整配置
   optimization: {
     enabled: false;
   };
@@ -132,7 +135,7 @@ export interface GenerateConfigResponse {
   success: boolean;
   data?: {
     downloadUrl: string;
-    fileType: 'json' | 'zip';
+    fileType: "json" | "zip";
     filename: string;
     optimization: {
       enabled: boolean;
@@ -148,24 +151,24 @@ export interface GenerateConfigResponse {
 
 // 验证规则
 export interface ValidationRules {
-  maxCategorySize: number;     // KB
-  maxSiteCount: number;        // 每个分类最大网站数
-  maxPreviewCount: number;     // 最大预览网站数
-  requiredFields: string[];    // 网站必填字段
+  maxCategorySize: number; // KB
+  maxSiteCount: number; // 每个分类最大网站数
+  maxPreviewCount: number; // 最大预览网站数
+  requiredFields: string[]; // 网站必填字段
 }
 
 export const DEFAULT_VALIDATION_RULES: ValidationRules = {
   maxCategorySize: 100,
   maxSiteCount: 50,
   maxPreviewCount: 5,
-  requiredFields: ['title', 'description']
+  requiredFields: ["title", "description"],
 };
 
 export const DEFAULT_OPTIMIZATION_OPTIONS: OptimizationOptions = {
   enabled: true,
   previewCount: 3,
   chunkSizeLimit: 100,
-  enablePreload: true
+  enablePreload: true,
 };
 
 // 缓存相关类型
@@ -178,7 +181,7 @@ export interface CacheStatus {
 
 export interface LoadingState {
   categoryIndex: number;
-  status: 'idle' | 'loading' | 'loaded' | 'error';
+  status: "idle" | "loading" | "loaded" | "error";
   error?: string;
   progress?: number;
 }

@@ -160,9 +160,8 @@ export class ConfigConverter {
     };
 
     // 4. 生成分类文件
-    const categoryFiles: CategoryFile[] = categories.map((category) => ({
-      filename: `${category.categoryIndex}.json`,
-      content: {
+    const categoryFiles: CategoryFile[] = categories.map((category) => {
+      const content = {
         categoryIndex: category.categoryIndex,
         categoryName: category.categoryName,
         sites: category.sites,
@@ -171,8 +170,13 @@ export class ConfigConverter {
           siteCount: category.sites.length,
           fileSizeKB: Math.ceil(JSON.stringify(category.sites).length / 1024),
         },
-      },
-    }));
+      };
+      return {
+        filename: `${category.categoryIndex}.json`,
+        content: content,
+        sizeKB: Math.ceil(JSON.stringify(content).length / 1024),
+      };
+    });
 
     // 5. 计算优化统计
     const originalSize = JSON.stringify(traditionalConfig).length;
