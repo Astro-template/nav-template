@@ -39,7 +39,7 @@
 
 ### 环境要求
 - Node.js 18+
-- npm 或 yarn
+- pnpm (推荐) 或 npm
 
 ### 安装步骤
 
@@ -48,15 +48,20 @@
 git clone https://github.com/51nav/Astro-nav.git
 cd Astro-nav
 
+# 安装 pnpm (如果还没有)
+npm install -g pnpm
+
 # 安装依赖
-npm install
+pnpm install
 
 # 生成配置文件
-npm run build-config
+pnpm run build-config
 
 # 启动开发服务器
-npm run dev
+pnpm run dev
 ```
+
+> 💡 本项目使用 **pnpm** 作为包管理器，提供更快的安装速度和更小的磁盘占用。详见 [pnpm 使用指南](docs/pnpm-guide.md)。
 
 ### 访问项目
 - 开发服务器: http://localhost:4321
@@ -84,11 +89,12 @@ Astro-nav/
 
 | 命令 | 功能 |
 |------|------|
-| `npm run dev` | 启动开发服务器 |
-| `npm run build` | 构建生产版本 |
-| `npm run build-config` | 生成优化配置 |
-| `npm run copy-config` | 复制配置文件 |
-| `npm run preview` | 预览构建结果 |
+| `pnpm run dev` | 启动开发服务器 |
+| `pnpm run build` | 构建生产版本 |
+| `pnpm run build-config` | 生成优化配置 |
+| `pnpm run copy-config` | 复制配置文件 |
+| `pnpm run preview` | 预览构建结果 |
+| `pnpm run check-deps` | 检查幽灵依赖 |
 
 ## 📚 文档
 
@@ -99,10 +105,11 @@ Astro-nav/
 - 🏗️ **[文档架构](docs/09-references/directory-structure.md)** - 详细的目录结构设计
 
 ### 🚀 快速导航
-- � **新用户**: [用户指南](docs/user/user-guide.md) | [配置指南](docs/user/config-guide.md)
-- �‍💻 **开发者**: [项目架构](docs/development/project-architecture.md) | [开发计划](docs/development/development-plan.md)
+- 👥 **新用户**: [用户指南](docs/user/user-guide.md) | [配置指南](docs/user/config-guide.md)
+- 👨‍💻 **开发者**: [项目架构](docs/development/project-architecture.md) | [开发计划](docs/development/development-plan.md)
 - 🚀 **部署**: [GitHub Actions](docs/deployment/github-actions-deployment.md)
 - ✨ **功能**: [懒加载](docs/features/) | [CSV导入](docs/csv-import/)
+- 📦 **包管理**: [pnpm 使用指南](docs/pnpm-guide.md)
 - 📊 **进度**: [Week 3 TODO](docs/TODO-week3-frontend-integration.md)
 
 ## 🏗️ 技术架构
