@@ -18,19 +18,19 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@astrojs/sitemap": "^3.2.1",
+    "@astrojs/check": "^0.9.5",
+    "@astrojs/sitemap": "^3.6.0",
     "@types/busboy": "^1.5.4",
-    "astro": "^4.16.15",
+    "astro": "^5.15.1",
     "busboy": "^1.6.0",
     "jszip": "^3.10.1",
     "papaparse": "^5.5.3",
     "qrcode": "^1.5.4",
-    "typescript": "^5.7.2",
+    "typescript": "^5.9.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@astrojs/ts-plugin": "^1.10.4",
+    "@astrojs/ts-plugin": "^1.10.5",
     "@types/papaparse": "^5.3.16",
     "@types/qrcode": "^1.5.5"
   }
