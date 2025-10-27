@@ -129,4 +129,52 @@ const navigationData = menuItems.map(convertMenuItemToCategory);
       left: 0;
     }
   }
-</style> 
+</style>
+
+<script>
+  // 处理页面加载时的 hash，激活对应的分类和 tab
+  function handleHashOnLoad() {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    // 解析 hash，支持两种格式：
+    // 1. #category-2 (只有分类)
+    // 2. #category-2-tab-1 (分类 + tab)
+    const match = hash.match(/#category-(\d+)(?:-tab-(\d+))?/);
+    if (!match) return;
+
+    const categoryIndex = match[1];
+    const tabIndex = match[2];
+
+    // 滚动到对应的分类
+    const categoryElement = document.getElementById(`category-${categoryIndex}`);
+    if (categoryElement) {
+      setTimeout(() => {
+        categoryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    // 如果有 tab 信息，激活对应的 tab
+    if (tabIndex !== undefined) {
+      setTimeout(() => {
+        const tabButton = document.querySelector(
+          `#category-${categoryIndex} .tab-button[data-tab="tab-${categoryIndex}-${tabIndex}"]`
+        ) as HTMLElement;
+
+        if (tabButton) {
+          tabButton.click();
+        }
+      }, 200);
+    }
+  }
+
+  // 页面加载完成后处理 hash
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', handleHashOnLoad);
+  } else {
+    handleHashOnLoad();
+  }
+
+  // 监听 hash 变化
+  window.addEventListener('hashchange', handleHashOnLoad);
+</script> 

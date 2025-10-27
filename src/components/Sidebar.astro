@@ -50,7 +50,7 @@ function getItemCount(category: any): number {
                             <div class="subcategory-list">
                                 {category.subCategories.map((sub, subIndex) => (
                                     <a
-                                        href={`/#category-${index}`}
+                                        href={`/#category-${index}-tab-${subIndex}`}
                                         class="subcategory-link"
                                         data-category={index}
                                         data-tab={subIndex}
@@ -245,20 +245,29 @@ function getItemCount(category: any): number {
 
         if (!href) return;
 
+        // 如果不在首页，让浏览器直接导航（会触发页面加载和 hash 处理）
+        if (window.location.pathname !== '/') {
+            return; // 让默认行为处理
+        }
+
+        // 在首页时，阻止默认行为并手动处理
         event.preventDefault();
 
         try {
-            const categoryId = href.split("#")[1];
             const categoryIndex = link.getAttribute("data-category");
             const tabIndex = link.getAttribute("data-tab");
 
-            if (!categoryId || !categoryIndex || !tabIndex) return;
+            if (!categoryIndex || !tabIndex) return;
 
-            // 如果不在首页，先导航到首页
-            if (window.location.pathname !== '/') {
-                window.location.href = href;
-                return;
-            }
+            // 更新所有子菜单的激活状态
+            document
+                .querySelectorAll(".subcategory-link")
+                .forEach((link) => {
+                    link.classList.remove("active");
+                });
+
+            // 设置当前子菜单为激活状态
+            link.classList.add("active");
 
             // 找到对应的标签按钮并点击
             const tabButton = document.querySelector(
@@ -266,25 +275,17 @@ function getItemCount(category: any): number {
             ) as HTMLElement;
 
             if (tabButton) {
-                // 更新所有子菜单的激活状态
-                document
-                    .querySelectorAll(".subcategory-link")
-                    .forEach((link) => {
-                        link.classList.remove("active");
-                    });
-
-                // 设置当前子菜单为激活状态
-                link.classList.add("active");
-
-                // 点击对应的标签按钮
                 tabButton.click();
-
-                // 滚动到对应的分类
-                const categoryElement = document.getElementById(categoryId);
-                if (categoryElement) {
-                    categoryElement.scrollIntoView({ behavior: "smooth" });
-                }
             }
+
+            // 滚动到对应的分类
+            const categoryElement = document.getElementById(`category-${categoryIndex}`);
+            if (categoryElement) {
+                categoryElement.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+
+            // 更新 URL hash（不触发页面跳转）
+            history.replaceState(null, '', href);
         } catch (error) {
             console.error("Error handling tab click:", error);
         }
