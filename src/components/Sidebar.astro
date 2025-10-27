@@ -34,7 +34,7 @@ function getItemCount(category: any): number {
             {
                 navigationData.map((category, index) => (
                     <div class="category-wrapper">
-                        <a href={`/#category-${index}`} class="category-link">
+                        <a href={`/#category-${index}`} class="category-link" data-navigate-home>
                             <div class="category-info">
                                 <iconify-icon
                                     icon={category.icon}
@@ -54,6 +54,7 @@ function getItemCount(category: any): number {
                                         class="subcategory-link"
                                         data-category={index}
                                         data-tab={subIndex}
+                                        data-navigate-home
                                     >
                                         {sub.name}
                                         <span class="item-count">
@@ -221,6 +222,23 @@ function getItemCount(category: any): number {
 </style>
 
 <script>
+    // 处理导航到首页的链接
+    function handleNavigateHome(event: Event) {
+        const link = event.currentTarget as HTMLAnchorElement;
+        const href = link.getAttribute("href");
+        
+        if (!href) return;
+        
+        // 如果当前不在首页，需要先导航到首页
+        if (window.location.pathname !== '/') {
+            event.preventDefault();
+            window.location.href = href;
+            return;
+        }
+        
+        // 如果已经在首页，让默认行为处理 hash 跳转
+    }
+
     function handleTabClick(event: Event) {
         const link = event.target as HTMLAnchorElement;
         const href = link.getAttribute("href");
@@ -235,6 +253,12 @@ function getItemCount(category: any): number {
             const tabIndex = link.getAttribute("data-tab");
 
             if (!categoryId || !categoryIndex || !tabIndex) return;
+
+            // 如果不在首页，先导航到首页
+            if (window.location.pathname !== '/') {
+                window.location.href = href;
+                return;
+            }
 
             // 找到对应的标签按钮并点击
             const tabButton = document.querySelector(
@@ -265,6 +289,11 @@ function getItemCount(category: any): number {
             console.error("Error handling tab click:", error);
         }
     }
+
+    // 为所有带 data-navigate-home 属性的链接添加事件监听
+    document.querySelectorAll('[data-navigate-home]').forEach((link) => {
+        link.addEventListener("click", handleNavigateHome);
+    });
 
     document.querySelectorAll(".subcategory-link").forEach((link) => {
         link.addEventListener("click", handleTabClick);
