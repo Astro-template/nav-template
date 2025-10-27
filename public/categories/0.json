@@ -1,0 +1,28 @@
+{
+  "categoryIndex": 0,
+  "categoryName": "Test Category 1",
+  "sites": [
+    {
+      "title": "Test Site 1",
+      "description": "Test Description 1",
+      "url": "https://test1.com",
+      "logo": "https://test1.com/logo.png"
+    },
+    {
+      "title": "Test Site 2",
+      "description": "Test Description 2",
+      "url": "https://test2.com",
+      "logo": "https://test2.com/logo.png"
+    },
+    {
+      "title": "Test Site 3",
+      "description": "Test Description 3",
+      "url": "https://test3.com",
+      "logo": "https://test3.com/logo.png"
+    }
+  ],
+  "metadata": {
+    "siteCount": 3,
+    "fileSizeKB": 5
+  }
+}

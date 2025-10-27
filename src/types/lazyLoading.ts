@@ -239,6 +239,7 @@ export interface ConfigDetectionResult {
   hasPreviewSites?: boolean;
   estimatedCategories: number;
   confidence: number; // 检测置信度 (0-1)
+  detectionTime?: number; // 检测耗时（毫秒）
 }
 
 /**

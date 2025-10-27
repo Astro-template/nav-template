@@ -1,109 +1,174 @@
 /**
- * Vitest 测试环境设置
- * 在所有测试运行前执行
+ * Vitest 全局测试设置
+ * 用于 mock fetch 和其他全局配置
  */
 
-import { beforeAll, afterEach, afterAll, vi } from 'vitest';
+import { vi } from 'vitest';
 
-// 模拟浏览器环境
-beforeAll(() => {
-  // 设置全局对象
-  global.fetch = vi.fn();
+// 设置测试环境标识
+process.env.NODE_ENV = 'test';
 
-  // 模拟 localStorage
-  const localStorageMock = {
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-    length: 0,
-    key: vi.fn(),
-  };
-  global.localStorage = localStorageMock as Storage;
-
-  // 模拟 sessionStorage
-  global.sessionStorage = { ...localStorageMock } as Storage;
-
-  // 模拟 console 方法（避免测试输出污染）
-  if (process.env.VITEST_SILENT === 'true') {
-    global.console = {
-      ...console,
-      log: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      debug: vi.fn(),
-    };
-  }
-
-  // 设置测试环境变量
-  process.env.NODE_ENV = 'test';
-  process.env.PUBLIC_SITE_URL = 'https://test.example.com';
-  process.env.PUBLIC_ENABLE_PERFORMANCE_MONITOR = 'false';
-  process.env.PUBLIC_CONFIG_PATH = '/config.json';
-});
-
-// 每个测试后清理
-afterEach(() => {
-  // 清除所有 mock
-  vi.clearAllMocks();
-
-  // 清除 localStorage
-  localStorage.clear();
-  sessionStorage.clear();
-});
-
-// 所有测试完成后清理
-afterAll(() => {
-  vi.restoreAllMocks();
-});
-
-// 全局测试工具函数
-export const testUtils = {
-  /**
-   * 等待一段时间
-   */
-  wait: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
-
-  /**
-   * 创建模拟的 Response 对象
-   */
-  createMockResponse: (data: any, ok = true, status = 200) => {
-    return {
-      ok,
-      status,
-      json: async () => data,
-      text: async () => JSON.stringify(data),
-      headers: new Headers(),
-    } as Response;
+// Mock 配置数据（符合 UnifiedConfig 类型定义）
+const mockConfig = {
+  site: {
+    title: 'Test Site',
+    description: 'Test Description',
+    logo: { text: 'T' },
   },
-
-  /**
-   * 模拟 fetch 成功响应
-   */
-  mockFetchSuccess: (data: any) => {
-    (global.fetch as any).mockResolvedValueOnce(
-      testUtils.createMockResponse(data, true, 200)
-    );
+  optimization: {
+    enabled: true,
+    lazyLoad: true,
+    preload: true,
   },
-
-  /**
-   * 模拟 fetch 失败响应
-   */
-  mockFetchError: (error: Error | string) => {
-    const errorObj = typeof error === 'string' ? new Error(error) : error;
-    (global.fetch as any).mockRejectedValueOnce(errorObj);
-  },
-
-  /**
-   * 模拟 fetch 404 响应
-   */
-  mockFetch404: () => {
-    (global.fetch as any).mockResolvedValueOnce(
-      testUtils.createMockResponse(null, false, 404)
-    );
-  },
+  menuItems: [
+    {
+      name: 'Test Category 1',
+      icon: 'icon-test-1',
+      categoryIndex: 0,
+      url: '/category-0.json',
+      siteCount: 10,
+      previewSites: [],
+    },
+    {
+      name: 'Test Category 2',
+      icon: 'icon-test-2',
+      categoryIndex: 1,
+      url: '/category-1.json',
+      siteCount: 15,
+      previewSites: [],
+    },
+    {
+      name: 'Test Category 3',
+      icon: 'icon-test-3',
+      categoryIndex: 2,
+      url: '/category-2.json',
+      siteCount: 20,
+      previewSites: [],
+      submenu: [
+        {
+          name: 'Child 1',
+          icon: 'icon-child-1',
+          categoryIndex: 3,
+          url: '/category-3.json',
+          siteCount: 5,
+          previewSites: [],
+        },
+        {
+          name: 'Child 2',
+          icon: 'icon-child-2',
+          categoryIndex: 4,
+          url: '/category-4.json',
+          siteCount: 8,
+          previewSites: [],
+        },
+      ],
+    },
+  ],
+  totalSiteCount: 58,
 };
 
-// 导出测试辅助类型
-export type MockedFunction<T extends (...args: any[]) => any> = ReturnType<typeof vi.fn<T>>;
+// Mock 分类数据
+const mockCategoryData = (index: number) => ({
+  categoryName: `Test Category ${index}`,
+  categoryIndex: index,
+  sites: [
+    {
+      title: `Site ${index}-1`,
+      url: `https://example${index}-1.com`,
+      description: `Test site ${index}-1`,
+      icon: 'icon-site',
+    },
+    {
+      title: `Site ${index}-2`,
+      url: `https://example${index}-2.com`,
+      description: `Test site ${index}-2`,
+      icon: 'icon-site',
+    },
+  ],
+});
+
+// Mock global fetch
+global.fetch = vi.fn((url: string | URL | Request, init?: RequestInit) => {
+  const urlString = typeof url === 'string' ? url : url.toString();
+
+  // Mock config.json
+  if (urlString.includes('/config.json')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+      json: () => Promise.resolve(mockConfig),
+      text: () => Promise.resolve(JSON.stringify(mockConfig)),
+      blob: () => Promise.resolve(new Blob([JSON.stringify(mockConfig)])),
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      clone: function() { return this; },
+    } as Response);
+  }
+
+  // Mock category-*.json
+  const categoryMatch = urlString.match(/category-(\d+)\.json/);
+  if (categoryMatch) {
+    const index = parseInt(categoryMatch[1], 10);
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+      json: () => Promise.resolve(mockCategoryData(index)),
+      text: () => Promise.resolve(JSON.stringify(mockCategoryData(index))),
+      blob: () => Promise.resolve(new Blob([JSON.stringify(mockCategoryData(index))])),
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      clone: function() { return this; },
+    } as Response);
+  }
+
+  // Mock 404
+  return Promise.resolve({
+    ok: false,
+    status: 404,
+    statusText: 'Not Found',
+    headers: new Headers(),
+    json: () => Promise.reject(new Error('Not Found')),
+    text: () => Promise.resolve('Not Found'),
+    blob: () => Promise.resolve(new Blob()),
+    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+    clone: function() { return this; },
+  } as Response);
+}) as any;
+
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: (index: number) => {
+      const keys = Object.keys(store);
+      return keys[index] || null;
+    },
+  };
+})();
+
+global.localStorage = localStorageMock as Storage;
+
+// Mock performance.now if not available
+if (typeof performance === 'undefined') {
+  (global as any).performance = {
+    now: () => Date.now(),
+  };
+}
+
+console.log('✅ Test setup completed: fetch, localStorage, and performance mocked');

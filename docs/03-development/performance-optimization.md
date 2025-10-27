@@ -403,16 +403,16 @@ interface ValidationRules {
 ### 开发环境配置
 ```bash
 # 安装依赖
-npm install
+pnpm install
 
 # 开发模式 (使用优化配置)
-npm run dev:optimized
+pnpm run dev:optimized
 
 # 构建优化版本
-npm run build:optimized
+pnpm run build:optimized
 
 # 性能测试
-npm run test:performance
+pnpm run test:performance
 ```
 
 ### 调试工具

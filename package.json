@@ -44,6 +44,10 @@
   "devDependencies": {
     "@astrojs/ts-plugin": "^1.10.5",
     "@types/papaparse": "^5.3.16",
-    "@types/qrcode": "^1.5.5"
+    "@types/qrcode": "^1.5.5",
+    "@vitest/coverage-v8": "^4.0.3",
+    "@vitest/ui": "^4.0.3",
+    "happy-dom": "^20.0.8",
+    "vitest": "^4.0.3"
   }
 }

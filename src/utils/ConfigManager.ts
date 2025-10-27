@@ -18,6 +18,14 @@ import type {
 } from "../types/lazyLoading";
 import { defaultErrorHandler, ErrorType } from "./ErrorHandler";
 
+// 日志工具 - 在测试环境中禁用
+const isTestEnv = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+const log = {
+  info: (...args: any[]) => !isTestEnv && log.info(...args),
+  warn: (...args: any[]) => !isTestEnv && log.warn(...args),
+  error: (...args: any[]) => !isTestEnv && log.error(...args),
+};
+
 /**
  * 配置管理器 - 核心配置管理类
  */
@@ -109,7 +117,7 @@ export class ConfigManager {
           throw error;
         }
 
-        console.warn(
+        log.warn(
           `🔄 ConfigManager: 请求失败，重试 ${attempt + 1}/${retries}`,
           error,
         );
@@ -170,6 +178,19 @@ export class ConfigManager {
   detectConfigFormat(config: any): ConfigDetectionResult {
     const startTime = performance.now();
 
+    // 处理 null/undefined 情况
+    if (!config || typeof config !== 'object') {
+      return {
+        isOptimized: false,
+        confidence: 0,
+        hasOptimizationField: false,
+        hasCategoryIndexes: false,
+        hasPreviewSites: false,
+        estimatedCategories: 0,
+        detectionTime: performance.now() - startTime,
+      };
+    }
+
     let confidence = 0;
     let isOptimized = false;
     let hasOptimizationField = false;
@@ -188,38 +209,32 @@ export class ConfigManager {
 
     // 2. 检查categoryIndex字段 (权重: 40%)
     if (config.menuItems && Array.isArray(config.menuItems)) {
-      const itemsWithCategoryIndex = config.menuItems.filter(
-        (item: any) =>
-          typeof item.categoryIndex === "number" && item.categoryIndex >= 0,
-      );
+      // 收集所有 categoryIndex（包括 submenu）
+      const allIndexes: number[] = [];
+      config.menuItems.forEach((item: any) => {
+        if (
+          typeof item.categoryIndex === "number" &&
+          item.categoryIndex >= 0
+        ) {
+          allIndexes.push(item.categoryIndex);
+        }
+        if (item.submenu && Array.isArray(item.submenu)) {
+          item.submenu.forEach((sub: any) => {
+            if (
+              typeof sub.categoryIndex === "number" &&
+              sub.categoryIndex >= 0
+            ) {
+              allIndexes.push(sub.categoryIndex);
+            }
+          });
+        }
+      });
 
-      if (itemsWithCategoryIndex.length > 0) {
+      if (allIndexes.length > 0) {
         hasCategoryIndexes = true;
         confidence += 0.4;
         isOptimized = true;
-
-        // 计算分类数量 (包括submenu)
-        const allIndexes: number[] = [];
-        config.menuItems.forEach((item: any) => {
-          if (
-            typeof item.categoryIndex === "number" &&
-            item.categoryIndex >= 0
-          ) {
-            allIndexes.push(item.categoryIndex);
-          }
-          if (item.submenu && Array.isArray(item.submenu)) {
-            item.submenu.forEach((sub: any) => {
-              if (
-                typeof sub.categoryIndex === "number" &&
-                sub.categoryIndex >= 0
-              ) {
-                allIndexes.push(sub.categoryIndex);
-              }
-            });
-          }
-        });
-        estimatedCategories =
-          allIndexes.length > 0 ? Math.max(...allIndexes) + 1 : 0;
+        estimatedCategories = Math.max(...allIndexes) + 1;
       }
     }
 
@@ -271,7 +286,7 @@ export class ConfigManager {
       confidence,
     };
 
-    console.log("🔍 配置格式检测:", {
+    log.info("🔍 配置格式检测:", {
       ...result,
       detectionTime: `${detectionTime.toFixed(2)}ms`,
     });
@@ -287,7 +302,7 @@ export class ConfigManager {
     this.loadingState = "loading";
 
     try {
-      console.log("🔄 ConfigManager: 开始加载配置文件...");
+      log.info("🔄 ConfigManager: 开始加载配置文件...");
 
       // 1. 加载主配置文件 (带错误处理)
       const response = await this.fetchWithRetry(this.configPath);
@@ -311,7 +326,7 @@ export class ConfigManager {
 
       const totalLoadTime = performance.now() - this.loadStartTime;
 
-      console.log("✅ ConfigManager: 配置加载成功", {
+      log.info("✅ ConfigManager: 配置加载成功", {
         format: this.configFormat,
         loadTime: `${totalLoadTime.toFixed(2)}ms`,
         menuItems: unifiedConfig.menuItems.length,
@@ -339,7 +354,7 @@ export class ConfigManager {
 
       const errorMessage = errorResult.error?.userMessage || "配置加载失败";
 
-      console.error("❌ ConfigManager: 配置加载失败", {
+      log.error("❌ ConfigManager: 配置加载失败", {
         error: errorMessage,
         loadTime: `${totalLoadTime.toFixed(2)}ms`,
         errorType: errorResult.error?.type,
@@ -513,19 +528,34 @@ export class ConfigManager {
 
   /**
    * 获取配置统计信息
+   * 
+   * @returns 配置统计对象，即使配置未加载也返回默认值（空对象模式）
    */
   getConfigStats() {
+    // 配置未加载时返回默认值（空对象模式）
     if (!this.currentConfig) {
-      return null;
+      return {
+        isLoaded: false,
+        isOptimized: false,
+        format: null as ConfigFormat | null,
+        loadingState: this.loadingState,
+        menuItemCount: 0,
+        totalSites: 0,
+        totalCategories: 0,
+        lazyLoadedItems: 0,
+        loadMetrics: this.loadMetrics,
+      };
     }
 
     const config = this.currentConfig;
     const stats = {
+      isLoaded: true,
+      isOptimized: config.isOptimized || false,
       format: this.configFormat,
-      isOptimized: config.isOptimized,
       loadingState: this.loadingState,
       menuItemCount: config.menuItems.length,
       totalSites: this.getTotalSiteCount(config),
+      totalCategories: this.getAllCategoryIndexes().length,
       lazyLoadedItems: config.menuItems.filter((item) => item.isLazyLoaded)
         .length,
       loadMetrics: this.loadMetrics,
@@ -565,7 +595,7 @@ export class ConfigManager {
    * 专门用于处理优化格式的配置文件
    */
   async loadOptimizedConfig(): Promise<ConfigLoadResult> {
-    console.log("🚀 ConfigManager: 开始加载优化配置...");
+    log.info("🚀 ConfigManager: 开始加载优化配置...");
 
     // 首先尝试正常加载配置
     const result = await this.loadConfig();
@@ -576,14 +606,14 @@ export class ConfigManager {
 
     // 验证是否为优化配置
     if (!result.isOptimized) {
-      console.warn("⚠️ ConfigManager: 当前配置不是优化格式");
+      log.warn("⚠️ ConfigManager: 当前配置不是优化格式");
       return {
         ...result,
         error: "当前配置不是优化格式，请使用 loadConfig() 方法",
       };
     }
 
-    console.log("✅ ConfigManager: 优化配置加载成功", {
+    log.info("✅ ConfigManager: 优化配置加载成功", {
       totalCategories: this.currentConfig?.optimization?.totalCategories,
       totalSites: this.currentConfig?.optimization?.totalSites,
       compressionRatio: this.currentConfig?.optimization?.compressionRatio,
@@ -600,7 +630,7 @@ export class ConfigManager {
     const startTime = performance.now();
 
     try {
-      console.log(`🔄 ConfigManager: 开始加载分类 ${categoryIndex} 数据...`);
+      log.info(`🔄 ConfigManager: 开始加载分类 ${categoryIndex} 数据...`);
 
       // 验证配置是否已加载且为优化模式
       if (!this.isConfigLoaded()) {
@@ -631,12 +661,12 @@ export class ConfigManager {
       }
 
       if (categoryData.categoryIndex !== categoryIndex) {
-        console.warn(
+        log.warn(
           `⚠️ 分类索引不匹配: 期望 ${categoryIndex}, 实际 ${categoryData.categoryIndex}`,
         );
       }
 
-      console.log(`✅ ConfigManager: 分类 ${categoryIndex} 数据加载成功`, {
+      log.info(`✅ ConfigManager: 分类 ${categoryIndex} 数据加载成功`, {
         categoryName: categoryData.categoryName,
         siteCount: categoryData.sites.length,
         loadTime: `${loadTime.toFixed(2)}ms`,
@@ -653,7 +683,7 @@ export class ConfigManager {
       const loadTime = performance.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : "未知错误";
 
-      console.error(`❌ ConfigManager: 分类 ${categoryIndex} 数据加载失败`, {
+      log.error(`❌ ConfigManager: 分类 ${categoryIndex} 数据加载失败`, {
         error: errorMessage,
         loadTime: `${loadTime.toFixed(2)}ms`,
       });
@@ -673,7 +703,7 @@ export class ConfigManager {
   async loadMultipleCategoryData(
     categoryIndexes: number[],
   ): Promise<Map<number, CategoryLoadResult>> {
-    console.log(
+    log.info(
       `🔄 ConfigManager: 开始批量加载 ${categoryIndexes.length} 个分类数据...`,
     );
 
@@ -689,7 +719,7 @@ export class ConfigManager {
     const successCount = Array.from(results.values()).filter(
       (r) => r.success,
     ).length;
-    console.log(`✅ ConfigManager: 批量加载完成`, {
+    log.info(`✅ ConfigManager: 批量加载完成`, {
       total: categoryIndexes.length,
       success: successCount,
       failed: categoryIndexes.length - successCount,
@@ -701,68 +731,81 @@ export class ConfigManager {
   /**
    * 获取分类信息 (Week 3 新增)
    * 从主配置中获取指定分类的基本信息
+   * 
+   * @returns 包含分类完整信息的对象，如果未找到则返回 null
    */
-  getCategoryInfo(
-    categoryIndex: number,
-  ): { name: string; siteCount: number; previewSites: any[] } | null {
-    if (!this.currentConfig || !this.isOptimizedMode()) {
+  getCategoryInfo(categoryIndex: number): {
+    name: string;
+    icon: string;
+    categoryIndex: number;
+    siteCount: number;
+    previewSites: any[];
+    url?: string;
+  } | null {
+    // 如果没有配置，返回 null
+    if (!this.currentConfig) {
       return null;
     }
 
-    // 在主菜单中查找
-    for (const item of this.currentConfig.menuItems) {
-      if (item.categoryIndex === categoryIndex) {
-        return {
-          name: item.name,
-          siteCount: item.siteCount || 0,
-          previewSites: item.previewSites || [],
-        };
-      }
+    const menuItems = this.currentConfig.menuItems || [];
 
-      // 在子菜单中查找
-      if (item.submenu) {
-        for (const subItem of item.submenu) {
-          if (subItem.categoryIndex === categoryIndex) {
-            return {
-              name: subItem.name,
-              siteCount: subItem.siteCount || 0,
-              previewSites: subItem.previewSites || [],
-            };
-          }
+    // 递归查找分类
+    const findCategory = (items: any[]): any | null => {
+      for (const item of items) {
+        // 只使用 categoryIndex 字段（符合类型定义）
+        if (item.categoryIndex === categoryIndex) {
+          return {
+            name: item.name,
+            icon: item.icon,
+            categoryIndex: item.categoryIndex,
+            siteCount: item.siteCount || 0,
+            previewSites: item.previewSites || [],
+            url: item.url,
+          };
+        }
+
+        // 在 submenu 中查找
+        if (item.submenu && Array.isArray(item.submenu)) {
+          const found = findCategory(item.submenu);
+          if (found) return found;
         }
       }
-    }
+      return null;
+    };
 
-    return null;
+    return findCategory(menuItems);
   }
 
   /**
    * 获取所有分类索引 (Week 3 新增)
    */
   getAllCategoryIndexes(): number[] {
-    if (!this.currentConfig || !this.isOptimizedMode()) {
+    // 如果没有配置，返回空数组
+    if (!this.currentConfig) {
       return [];
     }
 
     const indexes: number[] = [];
+    const menuItems = this.currentConfig.menuItems || [];
 
-    this.currentConfig.menuItems.forEach((item) => {
-      if (typeof item.categoryIndex === "number" && item.categoryIndex >= 0) {
-        indexes.push(item.categoryIndex);
-      }
+    // 递归收集所有索引
+    const collectIndexes = (items: any[]) => {
+      items.forEach((item) => {
+        // 只使用 categoryIndex 字段（符合类型定义）
+        if (typeof item.categoryIndex === 'number' && item.categoryIndex >= 0) {
+          indexes.push(item.categoryIndex);
+        }
 
-      if (item.submenu) {
-        item.submenu.forEach((subItem) => {
-          if (
-            typeof subItem.categoryIndex === "number" &&
-            subItem.categoryIndex >= 0
-          ) {
-            indexes.push(subItem.categoryIndex);
-          }
-        });
-      }
-    });
+        // 递归处理 submenu
+        if (item.submenu && Array.isArray(item.submenu)) {
+          collectIndexes(item.submenu);
+        }
+      });
+    };
 
+    collectIndexes(menuItems);
+
+    // 去重并排序
     return [...new Set(indexes)].sort((a, b) => a - b);
   }
 
@@ -778,7 +821,7 @@ export class ConfigManager {
    */
   updateRetryConfig(config: Partial<typeof this.retryConfig>): void {
     this.retryConfig = { ...this.retryConfig, ...config };
-    console.log("🔧 ConfigManager: 重试配置已更新", this.retryConfig);
+    log.info("🔧 ConfigManager: 重试配置已更新", this.retryConfig);
   }
 
   /**
@@ -849,3 +892,4 @@ export function getCategoryInfo(categoryIndex: number) {
 export function getAllCategoryIndexes(): number[] {
   return defaultConfigManager.getAllCategoryIndexes();
 }
+

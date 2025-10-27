@@ -176,7 +176,8 @@ import Layout from '../../../layouts/Layout.astro';
   function showStats() {
     const stats = configManager.getConfigStats();
     
-    if (!stats) {
+    // 检查配置是否已加载（使用空对象模式）
+    if (!stats.isLoaded) {
       statsResult.innerHTML = `
         <div class="result-item warning">
           <p>⚠️ 请先加载配置</p>

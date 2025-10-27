@@ -3,6 +3,14 @@
  * Week 3 - 任务2.3
  */
 
+// 日志工具 - 在测试环境中禁用
+const isTestEnv = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+const log = {
+  info: (...args: any[]) => !isTestEnv && console.log(...args),
+  warn: (...args: any[]) => !isTestEnv && console.warn(...args),
+  error: (...args: any[]) => !isTestEnv && console.error(...args),
+};
+
 export enum ErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
   DATA_ERROR = 'DATA_ERROR',
@@ -62,7 +70,7 @@ export class ErrorHandler {
 
   constructor() {
     this.initializeFallbackStrategies();
-    console.log('🛡️ ErrorHandler初始化完成');
+    log.info('🛡️ ErrorHandler初始化完成');
   }
 
   /**
@@ -76,7 +84,7 @@ export class ErrorHandler {
     const errorInfo = this.analyzeError(error, context);
     this.logError(errorInfo);
 
-    console.warn(`🚨 错误处理: ${errorInfo.type} - ${errorInfo.message}`);
+    log.warn(`🚨 错误处理: ${errorInfo.type} - ${errorInfo.message}`);
 
     // 尝试重试
     if (errorInfo.retryable) {
@@ -196,7 +204,7 @@ export class ErrorHandler {
     const currentAttempts = this.retryAttempts.get(retryKey) || 0;
     
     if (currentAttempts >= config.maxRetries) {
-      console.warn(`🔄 重试次数已达上限: ${errorInfo.type}`);
+      log.warn(`🔄 重试次数已达上限: ${errorInfo.type}`);
       return { success: false };
     }
 
@@ -208,7 +216,7 @@ export class ErrorHandler {
       config.maxDelay
     );
 
-    console.log(`🔄 重试 ${currentAttempts + 1}/${config.maxRetries}: ${errorInfo.type} (延迟: ${delay}ms)`);
+    log.info(`🔄 重试 ${currentAttempts + 1}/${config.maxRetries}: ${errorInfo.type} (延迟: ${delay}ms)`);
 
     await this.sleep(delay);
 
@@ -224,19 +232,19 @@ export class ErrorHandler {
     const strategies = this.fallbackStrategies.get(errorInfo.type);
     
     if (!strategies || strategies.length === 0) {
-      console.warn(`🔄 没有可用的降级策略: ${errorInfo.type}`);
+      log.warn(`🔄 没有可用的降级策略: ${errorInfo.type}`);
       return { success: false };
     }
 
     for (const strategy of strategies) {
       try {
-        console.log(`🔄 尝试降级策略: ${strategy.type} - ${strategy.description}`);
+        log.info(`🔄 尝试降级策略: ${strategy.type} - ${strategy.description}`);
         const result = await strategy.execute();
         
-        console.log(`✅ 降级策略成功: ${strategy.type}`);
+        log.info(`✅ 降级策略成功: ${strategy.type}`);
         return { success: true, data: result };
       } catch (fallbackError) {
-        console.warn(`❌ 降级策略失败: ${strategy.type}`, fallbackError);
+        log.warn(`❌ 降级策略失败: ${strategy.type}`, fallbackError);
       }
     }
 
@@ -308,68 +316,78 @@ export class ErrorHandler {
    * 错误类型判断方法
    */
   private isNetworkError(error: any, message: string): boolean {
+    const lowerMessage = message.toLowerCase();
     return (
       error?.name === 'NetworkError' ||
       error?.code === 'NETWORK_ERROR' ||
-      message.includes('fetch') ||
-      message.includes('network') ||
-      message.includes('连接') ||
+      error?.code === 'ECONNREFUSED' ||
+      lowerMessage.includes('fetch') ||
+      lowerMessage.includes('network') ||
+      lowerMessage.includes('连接') ||
+      lowerMessage.includes('econnrefused') ||
       error?.status >= 500
     );
   }
 
   private isTimeoutError(error: any, message: string): boolean {
+    const lowerMessage = message.toLowerCase();
     return (
       error?.name === 'TimeoutError' ||
       error?.code === 'TIMEOUT' ||
-      message.includes('timeout') ||
-      message.includes('超时')
+      lowerMessage.includes('timeout') ||
+      lowerMessage.includes('超时')
     );
   }
 
   private isParseError(error: any, message: string): boolean {
+    const lowerMessage = message.toLowerCase();
     return (
       error?.name === 'SyntaxError' ||
       error?.name === 'TypeError' ||
-      message.includes('JSON') ||
-      message.includes('parse') ||
-      message.includes('解析')
+      lowerMessage.includes('json') ||
+      lowerMessage.includes('parse') ||
+      lowerMessage.includes('解析') ||
+      lowerMessage.includes('syntax')
     );
   }
 
   private isConfigError(error: any, message: string, context?: any): boolean {
+    const lowerMessage = message.toLowerCase();
     return (
       context?.type === 'config' ||
-      message.includes('config') ||
-      message.includes('配置') ||
+      lowerMessage.includes('config') ||
+      lowerMessage.includes('配置') ||
       context?.operation === 'loadConfig'
     );
   }
 
   private isCacheError(error: any, message: string, context?: any): boolean {
+    const lowerMessage = message.toLowerCase();
     return (
       context?.type === 'cache' ||
-      message.includes('cache') ||
-      message.includes('缓存') ||
+      lowerMessage.includes('cache') ||
+      lowerMessage.includes('缓存') ||
       context?.operation === 'cache'
     );
   }
 
   private isPreloadError(error: any, message: string, context?: any): boolean {
+    const lowerMessage = message.toLowerCase();
     return (
       context?.type === 'preload' ||
-      message.includes('preload') ||
-      message.includes('预加载') ||
+      lowerMessage.includes('preload') ||
+      lowerMessage.includes('预加载') ||
       context?.operation === 'preload'
     );
   }
 
   private isStorageError(error: any, message: string): boolean {
+    const lowerMessage = message.toLowerCase();
     return (
       error?.name === 'QuotaExceededError' ||
-      message.includes('storage') ||
-      message.includes('quota') ||
-      message.includes('存储')
+      lowerMessage.includes('storage') ||
+      lowerMessage.includes('quota') ||
+      lowerMessage.includes('存储')
     );
   }
 
@@ -439,7 +457,7 @@ export class ErrorHandler {
   clearErrorLog(): void {
     this.errorLog = [];
     this.retryAttempts.clear();
-    console.log('🗑️ 错误日志已清理');
+    log.info('🗑️ 错误日志已清理');
   }
 
   /**

@@ -5,6 +5,14 @@
 
 import { defaultErrorHandler, ErrorType } from "./ErrorHandler";
 
+// 日志工具 - 在测试环境中禁用
+const isTestEnv = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+const log = {
+  info: (...args: any[]) => !isTestEnv && log.info(...args),
+  warn: (...args: any[]) => !isTestEnv && log.warn(...args),
+  error: (...args: any[]) => !isTestEnv && log.error(...args),
+};
+
 /**
  * 检查是否在浏览器环境中
  */
@@ -84,7 +92,7 @@ export class LocalStorageCache {
       this.loadFromLocalStorage();
       this.startCleanupTimer();
 
-      console.log("💾 LocalStorageCache初始化完成", {
+      log.info("💾 LocalStorageCache初始化完成", {
         prefix: this.config.prefix,
         maxSize: `${(this.config.maxSize / 1024 / 1024).toFixed(1)}MB`,
         maxItems: this.config.maxItems,
@@ -129,15 +137,15 @@ export class LocalStorageCache {
             this.removeFromStorage(key);
           }
         } catch (error) {
-          console.warn(`💾 加载缓存项失败: ${key}`, error);
+          log.warn(`💾 加载缓存项失败: ${key}`, error);
           this.removeFromStorage(key);
         }
       }
 
       this.updateStats();
-      console.log(`💾 从localStorage加载了 ${loadedCount} 个缓存项`);
+      log.info(`💾 从localStorage加载了 ${loadedCount} 个缓存项`);
     } catch (error) {
-      console.error("💾 从localStorage加载缓存失败", error);
+      log.error("💾 从localStorage加载缓存失败", error);
     }
   }
 
@@ -229,7 +237,7 @@ export class LocalStorageCache {
           serializedData = this.compress(serializedData);
           compressed = true;
         } catch (error) {
-          console.warn("💾 数据压缩失败，使用原始数据", error);
+          log.warn("💾 数据压缩失败，使用原始数据", error);
         }
       }
 
@@ -319,7 +327,7 @@ export class LocalStorageCache {
       this.recordOperation("clear", "all", true, startTime, 0);
       this.updateStats();
 
-      console.log("💾 缓存已清空");
+      log.info("💾 缓存已清空");
       return true;
     } catch (error) {
       await defaultErrorHandler.handleError(error, {
@@ -412,7 +420,7 @@ export class LocalStorageCache {
       this.updateStats();
 
       if (cleanedCount > 0) {
-        console.log(`💾 清理了 ${cleanedCount} 个过期缓存项`);
+        log.info(`💾 清理了 ${cleanedCount} 个过期缓存项`);
       }
 
       return cleanedCount;
@@ -458,14 +466,14 @@ export class LocalStorageCache {
         try {
           item.data = JSON.parse(this.decompress(item.data));
         } catch (error) {
-          console.warn("💾 数据解压缩失败", error);
+          log.warn("💾 数据解压缩失败", error);
           return null;
         }
       }
 
       return item;
     } catch (error) {
-      console.warn(`💾 从localStorage读取失败: ${key}`, error);
+      log.warn(`💾 从localStorage读取失败: ${key}`, error);
       return null;
     }
   }
@@ -486,7 +494,7 @@ export class LocalStorageCache {
 
       localStorage.setItem(key, JSON.stringify(dataToStore));
     } catch (error) {
-      console.warn(`💾 保存到localStorage失败: ${key}`, error);
+      log.warn(`💾 保存到localStorage失败: ${key}`, error);
       throw error;
     }
   }
@@ -500,7 +508,7 @@ export class LocalStorageCache {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      console.warn(`💾 从localStorage删除失败: ${key}`, error);
+      log.warn(`💾 从localStorage删除失败: ${key}`, error);
     }
   }
 
@@ -519,7 +527,7 @@ export class LocalStorageCache {
         }
       }
     } catch (error) {
-      console.warn("💾 获取存储键失败", error);
+      log.warn("💾 获取存储键失败", error);
     }
     return keys;
   }
@@ -578,7 +586,7 @@ export class LocalStorageCache {
       }
     }
 
-    console.log(
+    log.info(
       `💾 LRU清理: 删除了 ${evictedCount} 个项目，释放 ${freedSize} 字节`,
     );
     return freedSize >= requiredSize;
@@ -709,7 +717,7 @@ export class LocalStorageCache {
     this.stopCleanupTimer();
     this.memoryCache.clear();
     this.operations = [];
-    console.log("💾 LocalStorageCache已销毁");
+    log.info("💾 LocalStorageCache已销毁");
   }
 }
 
@@ -749,3 +757,4 @@ export async function deleteCached(key: string): Promise<boolean> {
 export async function clearCache(): Promise<boolean> {
   return defaultLocalStorageCache.clear();
 }
+

@@ -3,15 +3,38 @@
  * Week 3 - 项目级集成测试
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ConfigManager } from '../../src/utils/ConfigManager';
 import { LazyLoader } from '../../src/utils/LazyLoader';
+import fs from 'fs';
+import path from 'path';
 
 describe('ConfigManager与LazyLoader集成测试', () => {
   let configManager: ConfigManager;
   let lazyLoader: LazyLoader;
 
   beforeEach(() => {
+    // Mock fetch to read from static files
+    global.fetch = vi.fn((url: string) => {
+      const urlPath = new URL(url, 'http://localhost').pathname;
+      const filePath = path.join(process.cwd(), 'static', urlPath);
+      
+      try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => JSON.parse(content),
+        } as Response);
+      } catch (error) {
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+        } as Response);
+      }
+    }) as any;
+
     configManager = new ConfigManager();
     lazyLoader = new LazyLoader(configManager);
   });
@@ -34,7 +57,15 @@ describe('ConfigManager与LazyLoader集成测试', () => {
 
       // 3. 使用LazyLoader加载第一个分类
       const firstIndex = indexes[0];
+      console.log('First index:', firstIndex);
+      console.log('All indexes:', indexes);
+      
       const categoryResult = await lazyLoader.loadCategory(firstIndex);
+      
+      if (!categoryResult.success) {
+        console.log('LazyLoader Error:', categoryResult.error);
+        console.log('Category Result:', JSON.stringify(categoryResult, null, 2));
+      }
       
       expect(categoryResult.success).toBe(true);
       expect(categoryResult.data).toBeDefined();
