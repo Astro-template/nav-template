@@ -256,20 +256,7 @@ describe("PreloadStrategy", () => {
       expect(priorities.length).toBeLessThanOrEqual(5);
     });
 
-    it.skip("应该包含基于历史的优先级", () => {
-      // Skip: history-based priorities may need more visits to trigger
-      // 记录一些访问历史
-      strategy.recordUserVisit(7, 100);
-      strategy.recordUserVisit(7, 100);
-      strategy.recordUserVisit(7, 100);
 
-      const priorities = strategy.getPreloadPriorities(5);
-
-      const historyBased = priorities.find(
-        (p) => p.categoryIndex === 7 && p.reason === "history",
-      );
-      expect(historyBased).toBeDefined();
-    });
 
     it("应该处理无当前分类的情况", () => {
       const priorities = strategy.getPreloadPriorities();
@@ -536,67 +523,7 @@ describe("PreloadStrategy", () => {
     });
   });
 
-  describe.skip("clearUserHistory", () => {
-    // Skip: Method does not exist in implementation, use reset() instead
-    it("应该清空用户历史", () => {
-      strategy.recordUserVisit(1, 100);
-      strategy.recordUserVisit(2, 150);
 
-      // strategy.clearUserHistory();
-
-      const saved = localStorage.getItem("nav_user_history");
-      expect(saved).toBeNull();
-    });
-
-    it("应该重置内存中的历史记录", () => {
-      strategy.recordUserVisit(1, 100);
-
-      // strategy.clearUserHistory();
-
-      const priorities = strategy.getPreloadPriorities(5);
-      const historyBased = priorities.filter((p) => p.reason === "history");
-      expect(historyBased.length).toBe(0);
-    });
-  });
-
-  describe.skip("getUserHistory", () => {
-    // Skip: Method does not exist in implementation
-    it("应该返回用户历史记录", () => {
-      strategy.recordUserVisit(1, 100);
-      strategy.recordUserVisit(2, 150);
-
-      // const history = strategy.getUserHistory();
-
-      // expect(Array.isArray(history)).toBe(true);
-      // expect(history.length).toBe(2);
-    });
-
-    it("应该包含访问统计", () => {
-      strategy.recordUserVisit(1, 100);
-
-      // const history = strategy.getUserHistory();
-      // const entry = history.find((h) => h.categoryIndex === 1);
-
-      // expect(entry).toBeDefined();
-      // expect(entry?.visitCount).toBeGreaterThan(0);
-      // expect(entry?.lastVisit).toBeGreaterThan(0);
-    });
-
-    it("应该按访问次数排序", () => {
-      strategy.recordUserVisit(1, 100);
-      strategy.recordUserVisit(2, 150);
-      strategy.recordUserVisit(2, 160);
-      strategy.recordUserVisit(2, 170);
-
-      // const history = strategy.getUserHistory();
-
-      // if (history.length >= 2) {
-      //   expect(history[0].visitCount).toBeGreaterThanOrEqual(
-      //     history[1].visitCount,
-      //   );
-      // }
-    });
-  });
 
   describe("边缘情况", () => {
     it("应该处理空的分类列表", () => {

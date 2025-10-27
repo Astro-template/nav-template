@@ -270,19 +270,7 @@ describe("PerformanceBenchmark", () => {
     });
   });
 
-  describe.skip("getResult", () => {
-    // Skip: Method does not exist, use getResults() to find by name
-    it("应该通过名称获取特定测试结果", async () => {
-      await benchmark.runBenchmark("test1", vi.fn().mockResolvedValue("r1"), 1);
-      await benchmark.runBenchmark("test2", vi.fn().mockResolvedValue("r2"), 1);
 
-      const results = benchmark.getResults();
-      const result = results.find((r) => r.name === "test1");
-
-      expect(result).toBeDefined();
-      expect(result?.name).toBe("test1");
-    });
-  });
 
   describe("validateThresholds", () => {
     it("应该验证性能阈值", async () => {
