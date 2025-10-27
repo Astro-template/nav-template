@@ -61,11 +61,15 @@ export class LazyLoader {
 
   constructor(
     configManager?: ConfigManager,
-    options?: Partial<typeof LazyLoader.prototype.options>,
+    options?: Partial<typeof LazyLoader.prototype.options> & { maxCacheSize?: number },
   ) {
     this.configManager = configManager || new ConfigManager();
     if (options) {
       this.options = { ...this.options, ...options };
+      // 设置 maxCacheSize（如果提供）
+      if (options.maxCacheSize !== undefined) {
+        this.maxCacheSize = options.maxCacheSize;
+      }
     }
 
     // 初始化本地存储缓存
@@ -361,11 +365,17 @@ export class LazyLoader {
     // 添加到链表头部
     this.addToHead(newNode);
 
-    // 检查缓存大小限制
-    if (this.memoryCache.size > this.maxCacheSize) {
+    // 检查缓存大小限制（使用 > 因为已经添加了新节点）
+    // 当 size > max 时删除最旧的，确保最终 size <= max
+    while (this.memoryCache.size > this.maxCacheSize) {
+      log.info(`🗑️ 缓存超限: ${this.memoryCache.size} > ${this.maxCacheSize}，删除最旧的`);
       const tail = this.removeTail();
       if (tail) {
         this.memoryCache.delete(tail.key);
+        log.info(`🗑️ 已删除分类 ${tail.key}，当前缓存大小: ${this.memoryCache.size}`);
+      } else {
+        log.warn(`⚠️ removeTail 返回 undefined`);
+        break; // 防止无限循环
       }
     }
 

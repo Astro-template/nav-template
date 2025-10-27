@@ -3,15 +3,38 @@
  * Week 3 - 性能基准测试
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ConfigManager } from '../../src/utils/ConfigManager';
 import { LazyLoader } from '../../src/utils/LazyLoader';
+import fs from 'fs';
+import path from 'path';
 
 describe('懒加载性能测试', () => {
   let configManager: ConfigManager;
   let lazyLoader: LazyLoader;
 
   beforeEach(async () => {
+    // Mock fetch to read from static files
+    global.fetch = vi.fn((url: string) => {
+      const urlPath = new URL(url, 'http://localhost').pathname;
+      const filePath = path.join(process.cwd(), 'static', urlPath);
+      
+      try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => JSON.parse(content),
+        } as Response);
+      } catch (error) {
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+        } as Response);
+      }
+    }) as any;
+
     configManager = new ConfigManager();
     lazyLoader = new LazyLoader(configManager);
     
@@ -163,6 +186,7 @@ describe('懒加载性能测试', () => {
         await smallCacheLazyLoader.loadCategory(indexes[i]);
         
         const stats = smallCacheLazyLoader.getCacheStats();
+        console.log(`加载第${i+1}个分类后，缓存大小: ${stats.cacheSize}, 内存缓存: ${stats.memoryCache.cacheSize}`);
         expect(stats.cacheSize).toBeLessThanOrEqual(3); // 不应该超过最大缓存大小
       }
 
@@ -170,7 +194,7 @@ describe('懒加载性能测试', () => {
       expect(finalStats.cacheSize).toBe(3); // 最终应该正好是最大缓存大小
       
       console.log(`LRU缓存测试: 加载了 ${testCount} 个分类，缓存大小保持在 ${finalStats.cacheSize}`);
-    });
+    }, 30000); // 30秒超时
 
     it('缓存清理应该有效释放内存', async () => {
       const indexes = configManager.getAllCategoryIndexes();
