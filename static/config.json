@@ -3,131 +3,476 @@
     "title": "Affiliate导航",
     "description": "专业的Affiliate营销导航网站",
     "logo": {
-      "text": "Affiliate导航"
+      "text": "Affiliate导航",
+      "href": "/"
     }
   },
   "menuItems": [
     {
       "name": "追踪系统",
+      "href": "#追踪系统",
       "icon": "mdi:chart-line",
-      "categoryIndex": 0
+      "type": "single",
+      "categoryIndex": 0,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "Binom",
+          "description": "老毛子写的高性能tracker",
+          "url": "https://binom.org"
+        },
+        {
+          "title": "Voluum",
+          "description": "业界成名较早的tracker之一",
+          "url": "https://voluum.com"
+        },
+        {
+          "title": "FunnelFlux",
+          "description": "价格昂贵但是功能强大, 支持安装在自己的服务器上",
+          "url": "https://funnelflux.com"
+        }
+      ]
     },
     {
       "name": "SPY服务",
+      "href": "#spy服务",
       "icon": "mdi:eye",
-      "categoryIndex": 1
+      "type": "single",
+      "categoryIndex": 1,
+      "siteCount": 15,
+      "previewSites": [
+        {
+          "title": "Adplexity",
+          "description": "创立最早也是最优秀的spy工具",
+          "url": "https://adplexity.com"
+        },
+        {
+          "title": "Anstrex",
+          "description": "专注于Push和Native广告的SPY",
+          "url": "https://anstrex.com"
+        },
+        {
+          "title": "AdVault",
+          "description": "最好的原生广告SPY服务商之一",
+          "url": "#"
+        }
+      ]
     },
     {
       "name": "流量平台",
+      "href": "#流量平台",
       "icon": "mdi:traffic-light",
-      "categoryIndex": null,
+      "type": "tabs",
       "submenu": [
         {
           "name": "PoP流量",
+          "href": "#pop流量",
           "icon": "mdi:popup",
-          "categoryIndex": 2
+          "categoryIndex": 2,
+          "siteCount": 0,
+          "previewSites": []
         },
         {
           "name": "原生广告流量",
+          "href": "#原生广告流量",
           "icon": "mdi:newspaper",
-          "categoryIndex": 3
+          "categoryIndex": 3,
+          "siteCount": 4,
+          "previewSites": [
+            {
+              "title": "MGID",
+              "description": "全球最大的原生广告网络之一",
+              "url": "https://mgid.com"
+            },
+            {
+              "title": "Taboola",
+              "description": "高质量原生广告网络",
+              "url": "https://taboola.com"
+            },
+            {
+              "title": "Outbrain",
+              "description": "优质原生广告平台",
+              "url": "https://outbrain.com"
+            }
+          ]
         },
         {
           "name": "Push流量",
+          "href": "#push流量",
           "icon": "mdi:bell",
-          "categoryIndex": 4
+          "categoryIndex": 4,
+          "siteCount": 0,
+          "previewSites": []
         },
         {
           "name": "社交流量",
+          "href": "#社交流量",
           "icon": "mdi:account-group",
-          "categoryIndex": 5
+          "categoryIndex": 5,
+          "siteCount": 3,
+          "previewSites": [
+            {
+              "title": "Facebook Ads",
+              "description": "最大的社交广告平台",
+              "url": "https://facebook.com/advertising"
+            },
+            {
+              "title": "TikTok Ads",
+              "description": "短视频广告平台",
+              "url": "https://ads.tiktok.com"
+            },
+            {
+              "title": "Twitter Ads",
+              "description": "推特广告平台",
+              "url": "https://ads.twitter.com"
+            }
+          ]
         },
         {
           "name": "搜索流量",
+          "href": "#搜索流量",
           "icon": "mdi:magnify",
-          "categoryIndex": 6
+          "categoryIndex": 6,
+          "siteCount": 3,
+          "previewSites": [
+            {
+              "title": "Google Ads",
+              "description": "最大的搜索广告平台",
+              "url": "https://ads.google.com"
+            },
+            {
+              "title": "Bing Ads",
+              "description": "微软的搜索广告平台",
+              "url": "https://ads.microsoft.com"
+            },
+            {
+              "title": "Yandex.Direct",
+              "description": "俄罗斯最大的搜索广告平台",
+              "url": "https://direct.yandex.com"
+            }
+          ]
         },
         {
           "name": "Adult流量",
+          "href": "#adult流量",
           "icon": "mdi:alert-circle",
-          "categoryIndex": 7
+          "categoryIndex": 7,
+          "siteCount": 0,
+          "previewSites": []
         }
       ]
     },
     {
       "name": "综合性联盟",
+      "href": "#综合性联盟",
       "icon": "mdi:handshake",
-      "categoryIndex": 8
+      "type": "single",
+      "categoryIndex": 8,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "Rakuten Advertising",
+          "description": "各种牛逼广告主聚集的地方",
+          "url": "https://rakutenadvertising.com"
+        },
+        {
+          "title": "CJ Affiliate",
+          "description": "大名鼎鼎的CJ, 世界最大的营销联盟",
+          "url": "https://cj.com"
+        },
+        {
+          "title": "Shareasale",
+          "description": "美国小型广告主聚集的公司，值得加入",
+          "url": "https://shareasale.com"
+        }
+      ]
     },
     {
       "name": "CPA联盟",
+      "href": "#cpa联盟",
       "icon": "mdi:currency-usd",
-      "categoryIndex": 9
+      "type": "single",
+      "categoryIndex": 9,
+      "siteCount": 13,
+      "previewSites": [
+        {
+          "title": "PerformCB",
+          "description": "曾经的Clickbooth",
+          "url": "#"
+        },
+        {
+          "title": "Maxbounty",
+          "description": "硕果仅存的老牌加拿大联盟",
+          "url": "#"
+        },
+        {
+          "title": "DMS Performance Ad Market",
+          "description": "老牌美国联盟，前身W4，再前身HydroAds",
+          "url": "#"
+        }
+      ]
     },
     {
       "name": "广告论坛",
+      "href": "#广告论坛",
       "icon": "mdi:forum",
-      "categoryIndex": 10
+      "type": "single",
+      "categoryIndex": 10,
+      "siteCount": 2,
+      "previewSites": [
+        {
+          "title": "Warriorforum",
+          "description": "勇士论坛",
+          "url": "https://warriorforum.com"
+        },
+        {
+          "title": "STM Forum",
+          "description": "号称高端网络营销论坛, 需要付费",
+          "url": "https://stmforum.com"
+        }
+      ]
     },
     {
       "name": "SEO工具",
+      "href": "#seo工具",
       "icon": "mdi:search-web",
-      "categoryIndex": 11
+      "type": "single",
+      "categoryIndex": 11,
+      "siteCount": 5,
+      "previewSites": [
+        {
+          "title": "SEMRush",
+          "description": "搜索引擎优化，关键字研究工具",
+          "url": "https://semrush.com"
+        },
+        {
+          "title": "Ahrefs",
+          "description": "竞争对手关键字研究",
+          "url": "https://ahrefs.com"
+        },
+        {
+          "title": "Moz",
+          "description": "著名的关键字研究工具",
+          "url": "https://moz.com"
+        }
+      ]
     },
     {
       "name": "邮件营销",
+      "href": "#邮件营销",
       "icon": "mdi:email",
-      "categoryIndex": 12
+      "type": "single",
+      "categoryIndex": 12,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "Mailgun",
+          "description": "SMTP服务商，transaction email 首选",
+          "url": "https://mailgun.com"
+        },
+        {
+          "title": "Sendgrid",
+          "description": "纯SMTP服务商，价格实惠",
+          "url": "https://sendgrid.com"
+        },
+        {
+          "title": "Mailchimp",
+          "description": "全平台的邮件营销平台",
+          "url": "https://mailchimp.com"
+        }
+      ]
     },
     {
       "name": "电商平台",
+      "href": "#电商平台",
       "icon": "mdi:shopping",
-      "categoryIndex": 13
+      "type": "single",
+      "categoryIndex": 13,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "eBay Partner Network",
+          "description": "eBay也有自己的销售联盟噢",
+          "url": "#"
+        },
+        {
+          "title": "eBay",
+          "description": "电商鼻祖",
+          "url": "https://ebay.com"
+        },
+        {
+          "title": "Shopify",
+          "description": "各种大牛的聚集地",
+          "url": "https://shopify.com"
+        }
+      ]
     },
     {
       "name": "联盟后台",
+      "href": "#联盟后台",
       "icon": "mdi:view-dashboard",
-      "categoryIndex": 14
+      "type": "single",
+      "categoryIndex": 14,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "GetCake",
+          "description": "目前追踪最准价格最贵的平台",
+          "url": "#"
+        },
+        {
+          "title": "Tune(原hasoffers)",
+          "description": "用户使用最多的平台之一",
+          "url": "#"
+        },
+        {
+          "title": "Affise",
+          "description": "新晋崛起的Performance Marketing Platform服务商",
+          "url": "#"
+        }
+      ]
     },
     {
       "name": "域名注册",
+      "href": "#域名注册",
       "icon": "mdi:web",
-      "categoryIndex": 15
+      "type": "single",
+      "categoryIndex": 15,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "Dynadot",
+          "description": "对国人友好，支持支付宝，价格一般",
+          "url": "#"
+        },
+        {
+          "title": "Namecheap",
+          "description": "域名注册并不便宜，网站UI反应很慢，直接���问速度更慢",
+          "url": "https://namecheap.com"
+        },
+        {
+          "title": "Godaddy",
+          "description": "戏称'狗爹', 全球排名第一的域名注册商",
+          "url": "https://godaddy.com"
+        }
+      ]
     },
     {
       "name": "云服务器",
+      "href": "#云服务器",
       "icon": "mdi:server",
-      "categoryIndex": 16
+      "type": "single",
+      "categoryIndex": 16,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "Vultr",
+          "description": "Choopa旗下品牌，价格厚道",
+          "url": "https://vultr.com"
+        },
+        {
+          "title": "DigitalOcean",
+          "description": "低价优质的策略，成为AWS的有利竞争者",
+          "url": "https://digitalocean.com"
+        },
+        {
+          "title": "Linode",
+          "description": "网络好, 服务稳定，affiliate的最爱之一",
+          "url": "https://linode.com"
+        }
+      ]
     },
     {
       "name": "独立服务器",
+      "href": "#独立服务器",
       "icon": "mdi:server-network",
-      "categoryIndex": 17
+      "type": "single",
+      "categoryIndex": 17,
+      "siteCount": 0,
+      "previewSites": []
     },
     {
       "name": "支付服务",
+      "href": "#支付服务",
       "icon": "mdi:credit-card",
-      "categoryIndex": 18
+      "type": "single",
+      "categoryIndex": 18,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "Paxum",
+          "description": "Affiliate最常用的支付工具之一",
+          "url": "https://paxum.com"
+        },
+        {
+          "title": "Payoneer",
+          "description": "以色列支付工具，对中国友好",
+          "url": "https://payoneer.com"
+        },
+        {
+          "title": "Wise",
+          "description": "原TransferWise，跨境支付利器",
+          "url": "https://wise.com"
+        }
+      ]
     },
     {
       "name": "VPS代理",
+      "href": "#vps代理",
       "icon": "mdi:server-network",
-      "categoryIndex": 19
+      "type": "single",
+      "categoryIndex": 19,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "911",
+          "description": "老牌代理服务商",
+          "url": "#"
+        },
+        {
+          "title": "芝麻代理",
+          "description": "国内代理服务商",
+          "url": "#"
+        },
+        {
+          "title": "阿伟云",
+          "description": "性价比不错的代理",
+          "url": "#"
+        }
+      ]
     },
     {
       "name": "落地页工具",
+      "href": "#落地页工具",
       "icon": "mdi:tools",
-      "categoryIndex": 20
+      "type": "single",
+      "categoryIndex": 20,
+      "siteCount": 3,
+      "previewSites": [
+        {
+          "title": "Instapage",
+          "description": "制作落地页的利器",
+          "url": "https://instapage.com"
+        },
+        {
+          "title": "Unbounce",
+          "description": "专业的落地页制作工具",
+          "url": "https://unbounce.com"
+        },
+        {
+          "title": "Leadpages",
+          "description": "简单易用的落地页工具",
+          "url": "https://leadpages.com"
+        }
+      ]
     }
   ],
   "optimization": {
     "enabled": true,
-    "version": "2.0",
     "totalCategories": 21,
     "totalSites": 75,
-    "originalSizeKB": 38,
-    "optimizedSizeKB": 2,
-    "compressionRatio": 80,
-    "generatedAt": "2025-10-27T02:43:07.092Z"
+    "previewCount": 3,
+    "fileSizeKB": 7,
+    "compressionRatio": 77
   }
 }

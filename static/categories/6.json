@@ -1,5 +1,5 @@
 {
-  "categoryId": 6,
+  "categoryIndex": 6,
   "categoryName": "搜索流量",
   "sites": [
     {
@@ -118,5 +118,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 3,
+    "fileSizeKB": 2,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

@@ -1,5 +1,5 @@
 {
-  "categoryId": 11,
+  "categoryIndex": 11,
   "categoryName": "SEO工具",
   "sites": [
     {
@@ -192,5 +192,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 5,
+    "fileSizeKB": 3,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

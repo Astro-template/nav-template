@@ -1,5 +1,5 @@
 {
-  "categoryId": 0,
+  "categoryIndex": 0,
   "categoryName": "追踪系统",
   "sites": [
     {
@@ -120,5 +120,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 3,
+    "fileSizeKB": 2,
+    "lastModified": "2025-10-27T02:56:14.497Z"
+  }
 }

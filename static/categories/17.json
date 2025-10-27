@@ -1,5 +1,10 @@
 {
-  "categoryId": 17,
+  "categoryIndex": 17,
   "categoryName": "独立服务器",
-  "sites": []
+  "sites": [],
+  "metadata": {
+    "siteCount": 0,
+    "fileSizeKB": 1,
+    "lastModified": "2025-10-27T02:56:14.499Z"
+  }
 }

@@ -1,5 +1,5 @@
 {
-  "categoryId": 12,
+  "categoryIndex": 12,
   "categoryName": "邮件营销",
   "sites": [
     {
@@ -68,5 +68,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 3,
+    "fileSizeKB": 1,
+    "lastModified": "2025-10-27T02:56:14.499Z"
+  }
 }

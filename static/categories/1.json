@@ -1,5 +1,5 @@
 {
-  "categoryId": 1,
+  "categoryIndex": 1,
   "categoryName": "SPY服务",
   "sites": [
     {
@@ -336,5 +336,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 15,
+    "fileSizeKB": 4,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

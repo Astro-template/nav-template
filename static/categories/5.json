@@ -1,5 +1,5 @@
 {
-  "categoryId": 5,
+  "categoryIndex": 5,
   "categoryName": "社交流量",
   "sites": [
     {
@@ -116,5 +116,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 3,
+    "fileSizeKB": 2,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

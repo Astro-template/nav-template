@@ -1,5 +1,10 @@
 {
-  "categoryId": 4,
+  "categoryIndex": 4,
   "categoryName": "Push流量",
-  "sites": []
+  "sites": [],
+  "metadata": {
+    "siteCount": 0,
+    "fileSizeKB": 1,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

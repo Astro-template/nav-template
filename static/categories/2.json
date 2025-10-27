@@ -1,5 +1,10 @@
 {
-  "categoryId": 2,
+  "categoryIndex": 2,
   "categoryName": "PoP流量",
-  "sites": []
+  "sites": [],
+  "metadata": {
+    "siteCount": 0,
+    "fileSizeKB": 1,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

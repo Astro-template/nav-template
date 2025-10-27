@@ -1,5 +1,5 @@
 {
-  "categoryId": 3,
+  "categoryIndex": 3,
   "categoryName": "原生广告流量",
   "sites": [
     {
@@ -66,5 +66,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 4,
+    "fileSizeKB": 1,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

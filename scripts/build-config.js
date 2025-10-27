@@ -82,7 +82,7 @@ function generateOptimizedConfig(menuData, siteData, siteInfo) {
 }
 
 /**
- * 构建菜单结构
+ * 构建菜单结构（优化格式 - 包含完整字段）
  */
 function buildMenuStructure(menuData, siteData) {
   // 按menuType和parentMenuId分组
@@ -95,8 +95,12 @@ function buildMenuStructure(menuData, siteData) {
   return topLevelMenus.map((menu) => {
     const menuItem = {
       name: menu.menuName,
+      href: `#${menu.menuName.toLowerCase().replace(/\s+/g, '-')}`, // 添加 href
       icon: menu.menuIcon,
+      type: menu.menuType || "single", // 添加 type
       categoryIndex: null, // 将在后面分配
+      siteCount: 0, // 将在后面计算
+      previewSites: [], // 将在后面填充
     };
 
     // 如果是tabs类型，添加子菜单
@@ -107,9 +111,17 @@ function buildMenuStructure(menuData, siteData) {
 
       menuItem.submenu = children.map((child) => ({
         name: child.menuName,
+        href: `#${child.menuName.toLowerCase().replace(/\s+/g, '-')}`, // 添加 href
         icon: child.menuIcon,
         categoryIndex: null, // 将在后面分配
+        siteCount: 0, // 将在后面计算
+        previewSites: [], // 将在后面填充
       }));
+      
+      // tabs 类型的父菜单不需要这些字段
+      delete menuItem.categoryIndex;
+      delete menuItem.siteCount;
+      delete menuItem.previewSites;
     }
 
     return menuItem;
@@ -117,7 +129,7 @@ function buildMenuStructure(menuData, siteData) {
 }
 
 /**
- * 生成分类文件
+ * 生成分类文件（优化格式 - 使用 categoryIndex 并添加 metadata）
  */
 function generateCategoryFiles(menuItems) {
   const categoryFiles = [];
@@ -129,13 +141,26 @@ function generateCategoryFiles(menuItems) {
       item.submenu.forEach((subItem) => {
         subItem.categoryIndex = categoryIndex;
         const sites = getSitesForMenu(subItem.name);
+        
+        // 设置 siteCount 和 previewSites
+        subItem.siteCount = sites.length;
+        subItem.previewSites = sites.slice(0, 3).map(site => ({
+          title: site.title,
+          description: site.description,
+          url: site.url
+        }));
 
         categoryFiles.push({
           filename: `${categoryIndex}.json`,
           content: {
-            categoryId: categoryIndex,
+            categoryIndex: categoryIndex, // 使用 categoryIndex 而不是 categoryId
             categoryName: subItem.name,
             sites: sites,
+            metadata: {
+              siteCount: sites.length,
+              fileSizeKB: Math.ceil(JSON.stringify(sites).length / 1024),
+              lastModified: new Date().toISOString()
+            }
           },
         });
 
@@ -145,13 +170,26 @@ function generateCategoryFiles(menuItems) {
       // 单级菜单
       item.categoryIndex = categoryIndex;
       const sites = getSitesForMenu(item.name);
+      
+      // 设置 siteCount 和 previewSites
+      item.siteCount = sites.length;
+      item.previewSites = sites.slice(0, 3).map(site => ({
+        title: site.title,
+        description: site.description,
+        url: site.url
+      }));
 
       categoryFiles.push({
         filename: `${categoryIndex}.json`,
         content: {
-          categoryId: categoryIndex,
+          categoryIndex: categoryIndex, // 使用 categoryIndex 而不是 categoryId
           categoryName: item.name,
           sites: sites,
+          metadata: {
+            siteCount: sites.length,
+            fileSizeKB: Math.ceil(JSON.stringify(sites).length / 1024),
+            lastModified: new Date().toISOString()
+          }
         },
       });
 
@@ -253,7 +291,7 @@ function parseRelatedSites(titles, descriptions) {
 }
 
 /**
- * 生成基础配置
+ * 生成基础配置（优化格式 - 添加 logo.href）
  */
 function generateBaseConfig(menuItems, siteInfo, totalCategories) {
   return {
@@ -262,15 +300,17 @@ function generateBaseConfig(menuItems, siteInfo, totalCategories) {
       description: siteInfo.description,
       logo: {
         text: siteInfo.logoText,
+        href: "/" // 添加 href 字段
       },
     },
     menuItems: menuItems,
     optimization: {
       enabled: true,
-      version: "2.0",
       totalCategories: totalCategories,
       totalSites: 0, // 将在后面计算
-      generatedAt: new Date().toISOString(),
+      previewCount: 3, // 每个分类的预览数量
+      fileSizeKB: 0, // 将在后面计算
+      compressionRatio: 0, // 将在后面计算
     },
   };
 }
@@ -283,16 +323,27 @@ function calculateOptimization(menuItems, categoryFiles) {
     (sum, file) => sum + file.content.sites.length,
     0,
   );
+  
+  // 计算所有分类文件的总大小
+  const totalCategorySize = categoryFiles.reduce(
+    (sum, file) => sum + JSON.stringify(file.content).length,
+    0,
+  );
+  
+  // 计算主配置文件大小（估算）
+  const baseConfigSize = JSON.stringify(menuItems).length + 500; // 加上其他字段
+  
+  const originalSizeKB = Math.ceil((totalCategorySize + baseConfigSize) / 1024);
+  const optimizedSizeKB = Math.ceil(baseConfigSize / 1024);
+  const compressionRatio = Math.round((1 - optimizedSizeKB / originalSizeKB) * 100);
 
   return {
     enabled: true,
-    version: "2.0",
     totalCategories: categoryFiles.length,
     totalSites: totalSites,
-    originalSizeKB: Math.round(totalSites * 0.5), // 估算
-    optimizedSizeKB: Math.round(categoryFiles.length * 0.1), // 估算
-    compressionRatio: 80, // 估算
-    generatedAt: new Date().toISOString(),
+    previewCount: 3,
+    fileSizeKB: optimizedSizeKB,
+    compressionRatio: compressionRatio,
   };
 }
 

@@ -1,5 +1,5 @@
 {
-  "categoryId": 9,
+  "categoryIndex": 9,
   "categoryName": "CPA联盟",
   "sites": [
     {
@@ -210,5 +210,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 13,
+    "fileSizeKB": 3,
+    "lastModified": "2025-10-27T02:56:14.498Z"
+  }
 }

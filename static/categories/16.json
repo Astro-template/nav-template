@@ -1,5 +1,5 @@
 {
-  "categoryId": 16,
+  "categoryIndex": 16,
   "categoryName": "云服务器",
   "sites": [
     {
@@ -50,5 +50,10 @@
       },
       "related": []
     }
-  ]
+  ],
+  "metadata": {
+    "siteCount": 3,
+    "fileSizeKB": 1,
+    "lastModified": "2025-10-27T02:56:14.499Z"
+  }
 }
