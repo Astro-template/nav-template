@@ -281,7 +281,7 @@ const result = await loader.loadCategory(0);
 - [ ] **性能测试通过** - 性能敏感功能必须
 - [ ] **文档已更新** - README、API 文档等
 
-## � Git 工作程流
+##  Git 工作程流
 
 ### 分支策略
 
